@@ -1,0 +1,9 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  athelete: one
+  competition_event: one
+
+two:
+  athelete: two
+  competition_event: two

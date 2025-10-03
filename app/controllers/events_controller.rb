@@ -11,7 +11,7 @@ class EventsController < ApplicationController
   def create
     @event = Event.new(event_params)
     if @event.save
-      redirect_to @event, notice: "Event was successfully created."
+      redirect_to events_path, notice: "Event was successfully created."
     else
       render :new
     end
@@ -42,6 +42,6 @@ class EventsController < ApplicationController
   end
 
   def event_params
-    params.expect(event: [ :name, :event_type, :max_participants ])
+    params.expect(event: [ :name, :event_type, :max_participants, :avg_time ])
   end
 end

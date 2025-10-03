@@ -10,14 +10,14 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_10_03_161709) do
-  create_table "athlete_events", force: :cascade do |t|
+ActiveRecord::Schema[8.0].define(version: 2025_10_03_170642) do
+  create_table "athlete_competition_events", force: :cascade do |t|
     t.integer "athlete_id", null: false
-    t.integer "event_id", null: false
+    t.integer "competition_event_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["athlete_id"], name: "index_athlete_events_on_athlete_id"
-    t.index ["event_id"], name: "index_athlete_events_on_event_id"
+    t.index ["athlete_id"], name: "index_athlete_competition_events_on_athlete_id"
+    t.index ["competition_event_id"], name: "index_athlete_competition_events_on_competition_event_id"
   end
 
   create_table "athletes", force: :cascade do |t|
@@ -71,8 +71,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_03_161709) do
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
   end
 
-  add_foreign_key "athlete_events", "athletes"
-  add_foreign_key "athlete_events", "events"
+  add_foreign_key "athlete_competition_events", "athletes"
+  add_foreign_key "athlete_competition_events", "competition_events"
   add_foreign_key "competition_events", "competitions"
   add_foreign_key "competition_events", "events"
   add_foreign_key "sessions", "users"
