@@ -1,0 +1,31 @@
+<%= form_with(model: event, class: "contents") do |form| %>
+  <% if event.errors.any? %>
+    <div id="error_explanation" class="bg-red-50 text-red-500 px-3 py-2 font-medium rounded-md mt-3">
+      <h2><%= pluralize(event.errors.count, "error") %> prohibited this event from being saved:</h2>
+      <ul class="list-disc ml-6">
+        <% event.errors.each do |error| %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+  <div class="my-5">
+    <%= form.label "项目名称" %>
+    <%= form.text_field :name, class: ["input block mt-2", {"border-gray-400 focus:outline-blue-600": event.errors[:name].none?, "border-red-400 focus:outline-red-600": event.errors[:name].any?}] %>
+  </div>
+  <div class="my-5">
+    <%= form.label "项目类型" %>
+    <%= form.text_field :event_type, class: ["input block mt-2", {"border-gray-400 focus:outline-blue-600": event.errors[:event_type].none?, "border-red-400 focus:outline-red-600": event.errors[:event_type].any?}] %>
+  </div>
+  <div class="my-5">
+    <%= form.label "平均用时（分钟）" %>
+    <%= form.number_field :avg_time, class: ["input block mt-2", {"border-gray-400 focus:outline-blue-600": event.errors[:avg_time].none?, "border-red-400 focus:outline-red-600": event.errors[:avg_time].any?}] %>
+  </div>
+  <div class="my-5">
+    <%= form.label "最大人数" %>
+    <%= form.number_field :max_participants, class: ["input block mt-2", {"border-gray-400 focus:outline-blue-600": event.errors[:max_participants].none?, "border-red-400 focus:outline-red-600": event.errors[:max_participants].any?}] %>
+  </div>
+  <div class="inline">
+    <%= form.submit "提交", class: "btn btn-primary mr-2" %>
+  </div>
+<% end %>

@@ -1,0 +1,9 @@
+<% content_for :title, "New competition" %>
+
+<div class="md:w-2/3 w-full">
+  <h1 class="font-bold text-4xl">编辑比赛项目</h1>
+
+  <%= render "form", event: @event %>
+
+  <%= link_to "返回项目列表", events_path, class: "btn" %>
+</div>

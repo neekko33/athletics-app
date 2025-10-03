@@ -1,0 +1,43 @@
+<div>
+  <% if notice.present? %>
+    <p class="py-2 px-3 bg-green-50 mb-5 text-green-500 font-medium rounded-md inline-block" id="notice"><%= notice %></p>
+  <% end %>
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="font-bold text-4xl mb-6">比赛项目管理</h1>
+    <%= link_to "新建比赛项目", new_event_path, class: "btn btn-primary" %>
+  </div>
+  <% if @events.any? %>
+    <div class="overflow-x-auto">
+      <table class="table">
+        <!-- head -->
+        <thead>
+          <tr>
+            <th></th>
+            <th>项目名称</th>
+            <th>项目类型</th>
+            <th>平均用时（分钟）</th>
+            <th>最大参与人数</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @events.each_with_index do |event, index| %>
+            <tr>
+              <th><%= index + 1 %></th>
+              <td><%= event.name %></td>
+              <td><%= event.event_type %></td>
+              <td><%= event.avg_time %></td>
+              <td><%= event.max_participants %></td>
+              <td class="flex gap-2">
+                <%= link_to "编辑", edit_event_path(event), class: "btn btn-sm mr-2" %>
+                <%= button_to "删除", event_path(event), method: :delete, data: { turbo_confirm: "确定要删除该项目吗？" }, class: "btn btn-sm btn-error text-white" %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <p class="text-gray-600">暂无比赛项目。</p>
+  <% end %>
+</div>

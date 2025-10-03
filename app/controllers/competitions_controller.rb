@@ -26,10 +26,8 @@ class CompetitionsController < ApplicationController
     respond_to do |format|
       if @competition.save
         format.html { redirect_to @competition, notice: "Competition was successfully created." }
-        format.json { render :show, status: :created, location: @competition }
       else
         format.html { render :new, status: :unprocessable_entity }
-        format.json { render json: @competition.errors, status: :unprocessable_entity }
       end
     end
   end
@@ -39,10 +37,8 @@ class CompetitionsController < ApplicationController
     respond_to do |format|
       if @competition.update(competition_params)
         format.html { redirect_to @competition, notice: "Competition was successfully updated.", status: :see_other }
-        format.json { render :show, status: :ok, location: @competition }
       else
         format.html { render :edit, status: :unprocessable_entity }
-        format.json { render json: @competition.errors, status: :unprocessable_entity }
       end
     end
   end
@@ -53,7 +49,6 @@ class CompetitionsController < ApplicationController
 
     respond_to do |format|
       format.html { redirect_to competitions_path, notice: "Competition was successfully destroyed.", status: :see_other }
-      format.json { head :no_content }
     end
   end
 

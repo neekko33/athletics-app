@@ -6,24 +6,23 @@
   <% end %>
 
   <div class="flex justify-between items-center">
-    <h1 class="font-bold text-4xl">Competitions</h1>
-    <%= link_to "New competition", new_competition_path, class: "rounded-md px-3.5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white block font-medium" %>
+    <h1 class="font-bold text-4xl">运动会列表</h1>
+    <%= link_to "新建运动会", new_competition_path, class: "btn btn-primary" %>
   </div>
 
-  <div id="competitions" class="min-w-full divide-y divide-gray-200 space-y-5">
+  <div id="competitions" class="min-w-full grid grid-cols-3 gap-5 mt-8">
     <% if @competitions.any? %>
       <% @competitions.each do |competition| %>
-        <div class="flex flex-col sm:flex-row justify-between items-center pb-5 sm:pb-0">
+        <div class="card px-5 border border-gray-200 rounded-lg shadow-sm flex flex-col justify-between">
           <%= render competition %>
-          <div class="w-full sm:w-auto flex flex-col sm:flex-row space-x-2 space-y-2">
-            <%= link_to "Show", competition, class: "w-full sm:w-auto text-center rounded-md px-3.5 py-2.5 bg-gray-100 hover:bg-gray-50 inline-block font-medium" %>
-            <%= link_to "Edit", edit_competition_path(competition), class: "w-full sm:w-auto text-center rounded-md px-3.5 py-2.5 bg-gray-100 hover:bg-gray-50 inline-block font-medium" %>
-            <%= button_to "Destroy", competition, method: :delete, class: "w-full sm:w-auto rounded-md px-3.5 py-2.5 text-white bg-red-600 hover:bg-red-500 font-medium cursor-pointer", data: { turbo_confirm: "Are you sure?" } %>
+          <div class="w-full sm:w-auto flex sm:flex-row space-x-2 space-y-2 justify-end">
+            <%= link_to "查看", competition, class: "btn" %>
+            <%= button_to "删除", competition, method: :delete, class: "btn btn-error text-white", data: { turbo_confirm: "确定要删除该项目吗？" } %>
           </div>
         </div>
       <% end %>
     <% else %>
-      <p class="text-center my-10">No competitions found.</p>
+      <p class="text-center my-10">没有找到运动会.</p>
     <% end %>
   </div>
 </div>

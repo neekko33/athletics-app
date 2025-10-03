@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_10_03_145104) do
+ActiveRecord::Schema[8.0].define(version: 2025_10_03_161709) do
   create_table "athlete_events", force: :cascade do |t|
     t.integer "athlete_id", null: false
     t.integer "event_id", null: false
@@ -51,6 +51,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_03_145104) do
     t.integer "max_participants"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "avg_time"
   end
 
   create_table "sessions", force: :cascade do |t|
