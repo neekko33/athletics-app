@@ -1,0 +1,14 @@
+<nav class="bg-white shadow fixed w-full top-0 z-10 h-16">
+  <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+    <div class="text-xl font-bold flex items-center">
+      <%= image_tag "icon.png", alt: "Athletics APP Icon", class: "inline-block h-10 w-10 mr-1" %>
+      <%= link_to "Athletics", "/", class: "text-gray-800 hover:text-gray-600" %>
+    </div>
+    <div class="flex items-center">
+      <% if authenticated? %>
+        <span class="mr-4 text-gray-600"><%= Current.user.email_address %></span>
+        <%= button_to "登出", session_path, method: :delete, class: "btn btn-danger btn-sm" %>
+      <% end %>
+    </div>
+  </div>
+</nav>
