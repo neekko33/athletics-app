@@ -10,7 +10,49 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_10_03_140123) do
+ActiveRecord::Schema[8.0].define(version: 2025_10_03_145104) do
+  create_table "athlete_events", force: :cascade do |t|
+    t.integer "athlete_id", null: false
+    t.integer "event_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["athlete_id"], name: "index_athlete_events_on_athlete_id"
+    t.index ["event_id"], name: "index_athlete_events_on_event_id"
+  end
+
+  create_table "athletes", force: :cascade do |t|
+    t.string "name"
+    t.string "gender"
+    t.string "grade_name"
+    t.string "class_name"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "competition_events", force: :cascade do |t|
+    t.integer "competition_id", null: false
+    t.integer "event_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["competition_id"], name: "index_competition_events_on_competition_id"
+    t.index ["event_id"], name: "index_competition_events_on_event_id"
+  end
+
+  create_table "competitions", force: :cascade do |t|
+    t.string "name"
+    t.date "start_date"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "events", force: :cascade do |t|
+    t.string "name"
+    t.string "event_type"
+    t.integer "max_participants"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "sessions", force: :cascade do |t|
     t.integer "user_id", null: false
     t.string "ip_address"
@@ -28,5 +70,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_03_140123) do
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
   end
 
+  add_foreign_key "athlete_events", "athletes"
+  add_foreign_key "athlete_events", "events"
+  add_foreign_key "competition_events", "competitions"
+  add_foreign_key "competition_events", "events"
   add_foreign_key "sessions", "users"
 end
