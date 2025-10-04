@@ -1,0 +1,32 @@
+<%= render "competitions/step_bar", step: "add_event" %>
+<div class="w-full bg-white p-6 rounded-md shadow-md">
+  <div class="w-full flex justify-end mb-4">
+    <button class="btn btn-primary">添加比赛项目</button>
+  </div>
+  <div class="flex-1">
+    <table class="table w-full max-w-3xl mx-auto">
+      <thead>
+        <tr>
+          <th>项目名称</th>
+          <th>时长</th>
+          <th>参赛人数</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>100米</td>
+          <td>10秒</td>
+          <td>8人</td>
+          <td>
+            <button class="btn btn-sm">编辑</button>
+            <button class="btn btn-sm btn-error">删除</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="w-full flex justify-end mt-4">
+      <%= link_to "下一步", class: "btn btn-primary mt-4" %>
+    </div>
+  </div>
+</div>

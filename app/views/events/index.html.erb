@@ -25,7 +25,7 @@
             <tr>
               <th><%= index + 1 %></th>
               <td><%= event.name %></td>
-              <td><%= event.event_type %></td>
+              <td><%= event.event_type == "track" ? "径赛" : "田赛" %></td>
               <td><%= event.avg_time %></td>
               <td><%= event.max_participants %></td>
               <td class="flex gap-2">

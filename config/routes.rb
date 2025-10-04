@@ -4,6 +4,8 @@ Rails.application.routes.draw do
   get "up" => "rails/health#show", as: :rails_health_check
 
   root "competitions#index"
-  resources :competitions
+  resources :competitions do
+    resources :athletes, only: [ :index, :new, :create ]
+  end
   resources :events
 end

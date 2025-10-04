@@ -1,5 +1,5 @@
 class CompetitionsController < ApplicationController
-  before_action :set_competition, only: %i[ show edit update destroy ]
+  before_action :set_competition, only: %i[ show edit update destroy]
 
   # GET /competitions or /competitions.json
   def index
@@ -50,6 +50,12 @@ class CompetitionsController < ApplicationController
     respond_to do |format|
       format.html { redirect_to competitions_path, notice: "Competition was successfully destroyed.", status: :see_other }
     end
+  end
+
+  def add_event
+    @competition = Competition.find(params.expect(:competition_id))
+    @events = Event.all
+    render :add_event
   end
 
   private

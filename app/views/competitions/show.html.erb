@@ -13,18 +13,9 @@
       <%= link_to "返回", competitions_path, class: "btn" %>
     </div>
   </div>
-  <div>
+  <h2 class="font-bold text-2xl mb-6">设置流程</h2>
+  <div class="w-full text-center">
     <p class="text-gray-600">没有设定好的运动会项目，请点击下方按钮开始配置</p>
-    <%= link_to "开始配置", competition_path(@competition), class: "btn btn-primary mt-4" %>
+    <%= link_to "开始配置", competition_athletes_path(@competition), class: "btn btn-primary mt-4" %>
   </div>
-  <%# <h2 class="font-bold text-2xl mb-4">设置流程</h2>
-  <div class="flex justify-center my-8">
-    <ul class="steps">
-      <li class="step step-primary">添加项目</li>
-      <li class="step">运动员报名</li>
-      <li class="step">号码分配</li>
-      <li class="step">日程设定</li>
-      <li class="step">生成报告</li>
-    </ul>
-  </div> %>
 </div>

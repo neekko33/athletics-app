@@ -1,0 +1,46 @@
+<%= form_with(model: [@competition, athlete], class: "contents") do |form| %>
+  <% if athlete.errors.any? %>
+    <div id="error_explanation" class="bg-red-50 text-red-500 px-3 py-2 font-medium rounded-md mt-3">
+      <h2><%= pluralize(athlete.errors.count, "error") %> prohibited this athlete from being saved:</h2>
+      <ul class="list-disc ml-6">
+        <% athlete.errors.each do |error| %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+  <div class="my-5">
+    <%= form.label "姓名" %>
+    <%= form.text_field :name, class: ["input block mt-2", {"border-gray-400 focus:outline-blue-600": athlete.errors[:name].none?, "border-red-400 focus:outline-red-600": athlete.errors[:name].any?}] %>
+  </div>
+  <div class="my-5">
+    <%= form.label "年级" %>
+    <%= form.text_field :grade_name, class: ["input block mt-2", {"border-gray-400 focus:outline-blue-600": athlete.errors[:grade_name].none?, "border-red-400 focus:outline-red-600": athlete.errors[:grade_name].any?}] %>
+  </div>
+  <div class="my-5">
+    <%= form.label "班级" %>
+    <%= form.text_field :class_name, class: ["input block mt-2", {"border-gray-400 focus:outline-blue-600": athlete.errors[:class_name].none?, "border-red-400 focus:outline-red-600": athlete.errors[:class_name].any?}] %>
+  </div>
+  <div class="my-5">
+    <%= form.label "报名项目" %>
+    <div class="mt-2 space-y-2">
+      <% if @events&.any? %>
+        <% @events.each do |event| %>
+          <label class="flex items-center">
+            <%= form.check_box :event_ids, 
+                               { multiple: true, 
+                                 class: "mr-2 rounded border-gray-400 text-blue-600 focus:ring-blue-600" }, 
+                               event.id, 
+                               "" %>
+            <span class="text-gray-700"><%= event.name %></span>
+          </label>
+        <% end %>
+      <% else %>
+        <p class="text-gray-500 text-sm">暂无可用项目。</p>
+      <% end %>
+    </div>
+  </div>
+  <div class="inline">
+    <%= form.submit "提交", class: "btn btn-primary mr-2" %>
+  </div>
+<% end %>
