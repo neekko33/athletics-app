@@ -59,7 +59,7 @@
                   <%= link_to "编辑", edit_competition_schedule_path(@competition, schedule), class: "btn btn-sm" %>
                   <%= button_to "删除", competition_schedule_path(@competition, schedule),
                                method: :delete,
-                               data: { confirm: "确定删除此日程吗？" },
+                               data: { turbo_confirm: "确定删除此日程吗？" },
                                class: "btn btn-sm btn-error" %>
                 </div>
               </td>

@@ -37,7 +37,7 @@
             <%= link_to "编辑", edit_competition_athlete_path(@competition, athlete), class: "btn btn-sm" %>
             <%= button_to "删除", competition_athlete_path(@competition, athlete), 
                          method: :delete, 
-                         data: { confirm: "确定要删除该运动员吗？" },
+                         data: { turbo_confirm: "确定要删除该运动员吗？" },
                          class: "btn btn-sm btn-error" %>
             </div>
           </td>

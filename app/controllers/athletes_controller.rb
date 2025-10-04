@@ -202,7 +202,7 @@ class AthletesController < ApplicationController
   end
 
   def set_grade
-    @grade = @competition.grades.find_by(id: params[:grade_id])
+    @grade = @competition.grades.find_by(id: params[:athlete][:grade_id])
   end
 
   def athlete_params

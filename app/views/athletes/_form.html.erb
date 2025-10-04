@@ -23,6 +23,7 @@
                         action: "change->events#filterByGender" 
                       } } %>
   </div>
+  <%= form.hidden_field :grade_id, value: @grade.id %>
   <div class="my-5">
     <%= form.label "班级" %>
     <%= form.text_field :klass_name, 

@@ -5,7 +5,7 @@
     <%= button_to "自动生成分组", generate_all_competition_heats_path(@competition), 
                  method: :post,
                  class: "btn btn-primary",
-                 data: { confirm: "自动生成将清除所有现有分组并重新分配，确定继续吗？" } %>
+                 data: { turbo_confirm: "自动生成将清除所有现有分组并重新分配，确定继续吗？" } %>
   </div>
 
   <% if @track_events.any? %>
@@ -29,7 +29,7 @@
                         <%= link_to "编辑", edit_competition_heat_path(@competition, heat), class: "btn btn-sm btn-ghost" %>
                         <%= button_to "删除", competition_heat_path(@competition, heat), 
                                      method: :delete,
-                                     data: { confirm: "确定删除此分组吗？" },
+                                     data: { turbo_confirm: "确定删除此分组吗？" },
                                      class: "btn btn-sm btn-error btn-ghost" %>
                       </div>
                     </div>
