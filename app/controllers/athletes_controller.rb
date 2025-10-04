@@ -168,10 +168,13 @@ class AthletesController < ApplicationController
           if row["报名项目"].present?
             event_names = row["报名项目"].to_s.split(/[,，、]/).map(&:strip)
             event_names.each do |event_name|
-              event = Event.find_by(name: event_name)
+              event = Event.find_by(name: event_name, gender: row["性别"])
               if event
-                competition_event = @competition.competition_events.find_or_create_by!(event_id: event.id)
-                athlete.athlete_competition_events.create!(competition_event: competition_event)
+                  # 验证性别是否匹配
+                  competition_event = @competition.competition_events.find_or_create_by!(event_id: event.id)
+                  athlete.athlete_competition_events.create!(competition_event: competition_event)
+              else
+                errors << "第#{i}行: 找不到项目 '#{event_name}'"
               end
             end
           end

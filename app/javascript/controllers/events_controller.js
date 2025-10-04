@@ -21,12 +21,12 @@ export default class extends Controller {
   }
 
   hideAllEvents() {
-    // 隐藏所有项目并禁用复选框
+    // 隐藏所有项目并禁用复选框（但不取消勾选已选项）
     this.eventItemTargets.forEach(item => {
       item.style.display = 'none'
       const checkbox = item.querySelector('input[type="checkbox"]')
       if (checkbox) {
-        checkbox.checked = false
+        // 只禁用,不取消勾选,保留已报名项目的状态
         checkbox.disabled = true
       }
     })
@@ -63,9 +63,10 @@ export default class extends Controller {
         if (eventType === 'track') hasTrackEvents = true
         if (eventType === 'field') hasFieldEvents = true
       } else {
+        // 隐藏不匹配的项目,但不取消勾选
         item.style.display = 'none'
         if (checkbox) {
-          checkbox.checked = false
+          // 只禁用,不取消勾选,保留已报名项目的状态
           checkbox.disabled = true
         }
       }

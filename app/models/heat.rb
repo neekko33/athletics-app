@@ -6,7 +6,10 @@ class Heat < ApplicationRecord
   has_one :schedule, dependent: :destroy
 
   validates :heat_number, presence: true, numericality: { only_integer: true, greater_than: 0 }
-  validates :total_lanes, presence: true, numericality: { only_integer: true, greater_than: 0, less_than_or_equal_to: 10 }
+  validates :total_lanes, presence: true, numericality: { only_integer: true, greater_than: 0 }
+
+  # 径赛的跑道数不能超过10
+  validates :total_lanes, numericality: { less_than_or_equal_to: 10 }, if: :track_event?
 
   # 田赛项目需要年级
   validates :grade_id, presence: true, if: :field_event?
