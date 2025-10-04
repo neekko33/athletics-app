@@ -36,7 +36,7 @@ class HeatsController < ApplicationController
       next if athletes.empty?
 
       # 检查是否是接力项目
-      is_relay = competition_event.event.name.include?("接力") || competition_event.event.name.include?("4x100")
+      is_relay = competition_event.event.name.include?("接力") || competition_event.event.name.include?("4*100")
       max_lanes = @competition.track_lanes
 
       if is_relay
@@ -278,7 +278,7 @@ class HeatsController < ApplicationController
     end
 
     athlete = Athlete.find(athlete_id)
-    is_relay = @competition_event.event.name.include?("接力") || @competition_event.event.name.include?("4x100")
+    is_relay = @competition_event.event.name.include?("接力") || @competition_event.event.name.include?("4*100")
 
     # 检查年级是否匹配
     if @heat.grade_id && athlete.klass.grade_id != @heat.grade_id
