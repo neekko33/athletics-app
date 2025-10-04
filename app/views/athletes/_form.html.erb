@@ -1,4 +1,4 @@
-<%= form_with(model: [@competition, athlete], class: "contents") do |form| %>
+<%= form_with(model: [@competition, athlete], class: "contents", data: { controller: "events" }) do |form| %>
   <% if athlete.errors.any? %>
     <div id="error_explanation" class="bg-red-50 text-red-500 px-3 py-2 font-medium rounded-md mt-3">
       <h2><%= pluralize(athlete.errors.count, "error") %> prohibited this athlete from being saved:</h2>
@@ -14,6 +14,16 @@
     <%= form.text_field :name, class: ["input block mt-2", {"border-gray-400 focus:outline-blue-600": athlete.errors[:name].none?, "border-red-400 focus:outline-red-600": athlete.errors[:name].any?}] %>
   </div>
   <div class="my-5">
+    <%= form.label "性别" %>
+    <%= form.select :gender, [["男", "男"], ["女", "女"]], 
+                    { include_blank: true }, 
+                    { class: ["input block mt-2", {"border-gray-400 focus:outline-blue-600": athlete.errors[:gender].none?, "border-red-400 focus:outline-red-600": athlete.errors[:gender].any?}],
+                      data: { 
+                        events_target: "genderSelect",
+                        action: "change->events#filterByGender" 
+                      } } %>
+  </div>
+  <div class="my-5">
     <%= form.label "年级" %>
     <%= form.text_field :grade_name, class: ["input block mt-2", {"border-gray-400 focus:outline-blue-600": athlete.errors[:grade_name].none?, "border-red-400 focus:outline-red-600": athlete.errors[:grade_name].any?}] %>
   </div>
@@ -23,18 +33,47 @@
   </div>
   <div class="my-5">
     <%= form.label "报名项目" %>
-    <div class="mt-2 space-y-2">
+    <div class="mt-4 space-y-2 border p-4 rounded-md border-gray-200">
       <% if @events&.any? %>
-        <% @events.each do |event| %>
-          <label class="flex items-center">
-            <%= form.check_box :event_ids, 
+        <div class="mb-4" data-events-target="trackSection">
+          <h3 class="text-sm font-medium mb-2">径赛</h3>
+          <div class="grid grid-cols-4 gap-2">
+            <% @events.select { |event| event.event_type == "track"}.each do |event| %>
+              <label class="flex items-center" 
+                     data-events-target="eventItem" 
+                     data-gender="<%= event.gender %>" 
+                     data-event-type="track">
+                <%= form.check_box :event_ids, 
                                { multiple: true, 
-                                 class: "mr-2 rounded border-gray-400 text-blue-600 focus:ring-blue-600" }, 
+                                 class: "checkbox checkbox-sm mr-2" }, 
                                event.id, 
                                "" %>
-            <span class="text-gray-700"><%= event.name %></span>
-          </label>
-        <% end %>
+                <span class="text-gray-700"><%= event.name %></span>
+              </label>
+            <% end %>
+          </div>
+        </div>
+        <div data-events-target="fieldSection">
+          <h3 class="text-sm font-medium mb-2">田赛</h3>
+          <div class="grid grid-cols-4 gap-2">
+            <% @events.select { |event| event.event_type == "field"}.each do |event| %>
+              <label class="flex items-center" 
+                     data-events-target="eventItem" 
+                     data-gender="<%= event.gender %>" 
+                     data-event-type="field">
+                <%= form.check_box :event_ids, 
+                               { multiple: true, 
+                                 class: "checkbox checkbox-sm mr-2" }, 
+                               event.id, 
+                               "" %>
+                <span class="text-gray-700"><%= event.name %></span>
+              </label>
+            <% end %>
+          </div>
+        </div>
+        <p class="text-yellow-600 text-sm mt-2" data-events-target="notice" style="display: none;">
+          请先选择性别以查看可报名项目
+        </p>
       <% else %>
         <p class="text-gray-500 text-sm">暂无可用项目。</p>
       <% end %>

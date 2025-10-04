@@ -14,8 +14,9 @@
           <tr>
             <th></th>
             <th>项目名称</th>
-            <th>项目类型</th>
-            <th>平均用时（分钟）</th>
+            <th>性别</th>
+            <th>类型</th>
+            <th>比赛用时</th>
             <th>最大参与人数</th>
             <th>操作</th>
           </tr>
@@ -25,9 +26,10 @@
             <tr>
               <th><%= index + 1 %></th>
               <td><%= event.name %></td>
+              <td><%= event.gender %></td>
               <td><%= event.event_type == "track" ? "径赛" : "田赛" %></td>
-              <td><%= event.avg_time %></td>
-              <td><%= event.max_participants %></td>
+              <td><%= event.avg_time %>分钟</td>
+              <td><%= event.max_participants %>人</td>
               <td class="flex gap-2">
                 <%= link_to "编辑", edit_event_path(event), class: "btn btn-sm mr-2" %>
                 <%= button_to "删除", event_path(event), method: :delete, data: { turbo_confirm: "确定要删除该项目吗？" }, class: "btn btn-sm btn-error text-white" %>

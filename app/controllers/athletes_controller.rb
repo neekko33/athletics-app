@@ -36,6 +36,6 @@ class AthletesController < ApplicationController
   end
 
   def athlete_params
-    params.require(:athlete).permit(:name, :grade_name, :class_name, event_ids: [])
+    params.require(:athlete).permit(:name, :gender, :grade_name, :class_name, event_ids: [])
   end
 end
