@@ -11,11 +11,13 @@ Rails.application.routes.draw do
       collection do
         post :generate_numbers
         post :import
+        get :download_template
       end
     end
     resources :heats do
       collection do
         post :generate_all
+        post :generate_field_events
       end
     end
     resources :schedules do

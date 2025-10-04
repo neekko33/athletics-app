@@ -1,6 +1,6 @@
 class AthletesController < ApplicationController
   before_action :set_competition
-  before_action :set_grade, only: [ :new, :create ]
+  before_action :set_grade, only: [ :new ]
   before_action :set_athlete, only: [ :edit, :update, :destroy ]
 
   def index
@@ -20,13 +20,14 @@ class AthletesController < ApplicationController
   def create
     # 动态查找或创建班级
     klass_name = params[:athlete][:klass_name]
+    grade = @competition.grades.find_by(id: params[:athlete][:grade_id])
 
-    klass = @grade.klasses.find_or_create_by!(name: klass_name) do |k|
+    klass = grade.klasses.find_or_create_by!(name: klass_name) do |k|
       # 自动设置排序顺序（提取班级号）
       if klass_name =~ /(\d+)/
         k.order = $1.to_i
       else
-        k.order = @grade.klasses.maximum(:order).to_i + 1
+        k.order = grade.klasses.maximum(:order).to_i + 1
       end
     end
 
@@ -192,6 +193,43 @@ class AthletesController < ApplicationController
     redirect_to competition_athletes_path(@competition)
   end
 
+  def download_template
+    require "csv"
+
+    # 获取当前比赛的年级列表
+    grades = @competition.grades.order(:order).pluck(:name)
+
+    # 创建 CSV 数据
+    csv_data = CSV.generate(encoding: "UTF-8", write_headers: true, headers: [ "年级", "班级", "姓名", "性别", "报名项目" ]) do |csv|
+      # 添加说明行（用注释）
+      csv << [ "# 请删除此说明行", "填写示例如下", "↓↓↓", "", "" ]
+
+      # 添加示例数据
+      if grades.any?
+        first_grade = grades.first
+        csv << [ first_grade, "1班", "张三", "男", "100米,跳远" ]
+        csv << [ first_grade, "1班", "李四", "女", "100米,200米" ]
+        csv << [ first_grade, "2班", "王五", "男", "400米,跳高" ]
+
+        if grades.length > 1
+          second_grade = grades[1]
+          csv << [ second_grade, "1班", "赵六", "女", "200米" ]
+        end
+      else
+        # 如果没有年级，使用通用示例
+        csv << [ "一年级", "1班", "张三", "男", "100米,跳远" ]
+        csv << [ "一年级", "1班", "李四", "女", "100米,200米" ]
+        csv << [ "二年级", "2班", "王五", "男", "400米" ]
+      end
+    end
+
+    # 发送文件
+    send_data "\uFEFF" + csv_data,  # 添加 BOM 以支持 Excel 正确识别 UTF-8
+              filename: "运动员导入模板_#{@competition.name}_#{Time.current.strftime('%Y%m%d')}.csv",
+              type: "text/csv; charset=utf-8",
+              disposition: "attachment"
+  end
+
   private
   def set_competition
     @competition = Competition.find(params[:competition_id])
@@ -202,7 +240,7 @@ class AthletesController < ApplicationController
   end
 
   def set_grade
-    @grade = @competition.grades.find_by(id: params[:athlete][:grade_id])
+    @grade = @competition.grades.find_by(id: params[:grade_id])
   end
 
   def athlete_params

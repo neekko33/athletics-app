@@ -5,12 +5,17 @@ class Lane < ApplicationRecord
   has_many :results, dependent: :destroy
 
   validates :lane_number, presence: true, numericality: { only_integer: true, greater_than: 0 }
-  validates :position, presence: true, numericality: { only_integer: true, greater_than: 0 }
+  validates :position, presence: true, numericality: { only_integer: true, greater_than: 0 }, if: :field_event?
 
   # 确保同一heat中不重复lane_number
   validates :lane_number, uniqueness: { scope: :heat_id }
 
   default_scope { order(lane_number: :asc) }
+
+  # 是否是田赛项目
+  def field_event?
+    heat.competition_event.event.event_type == "field"
+  end
 
   # 是否是接力项目
   def relay?

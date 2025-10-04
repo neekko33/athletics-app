@@ -1,85 +1,164 @@
 <%= render "shared/step_bar", step: "heats" %>
 <div class="w-full bg-white p-6 rounded-md shadow-md">
-  <div class="w-full flex justify-end mb-8">
-    <h1 class="font-bold text-3xl mr-auto">径赛分组</h1>
-    <%= button_to "自动生成分组", generate_all_competition_heats_path(@competition), 
-                 method: :post,
-                 class: "btn btn-primary",
-                 data: { turbo_confirm: "自动生成将清除所有现有分组并重新分配，确定继续吗？" } %>
-  </div>
+  <!-- 径赛分组 -->
+  <div class="mb-12">
+    <div class="w-full flex justify-end mb-8">
+      <h1 class="font-bold text-3xl mr-auto">径赛分组</h1>
+      <%= button_to "自动生成径赛分组", generate_all_competition_heats_path(@competition), 
+                   method: :post,
+                   class: "btn btn-primary",
+                   data: { turbo_confirm: "自动生成将清除所有现有径赛分组并重新分配（按年级分组），确定继续吗？" } %>
+    </div>
 
-  <% if @track_events.any? %>
-    <div class="space-y-8">
-      <% @track_events.each do |competition_event| %>
-        <div class="card bg-base-100 shadow-sm border border-gray-200">
-          <div class="card-body">
-            <h2 class="card-title text-xl">
-              <%= competition_event.event.name %>
-              <span class="badge badge-primary"><%= competition_event.event.gender %></span>
-            </h2>
-            
-            <% if competition_event.heats.any? %>
-              <div class="mt-4 space-y-4">
-                <% competition_event.heats.order(:heat_number).each do |heat| %>
-                  <div class="border border-gray-200 rounded-lg p-4">
-                    <div class="flex justify-between items-center mb-3">
-                      <h3 class="font-semibold text-lg">第 <%= heat.heat_number %> 组</h3>
-                      <div class="space-x-2">
-                        <%= link_to "查看详情", competition_heat_path(@competition, heat), class: "btn btn-sm" %>
-                        <%= link_to "编辑", edit_competition_heat_path(@competition, heat), class: "btn btn-sm btn-ghost" %>
-                        <%= button_to "删除", competition_heat_path(@competition, heat), 
-                                     method: :delete,
-                                     data: { turbo_confirm: "确定删除此分组吗？" },
-                                     class: "btn btn-sm btn-error btn-ghost" %>
+    <% if @track_events.any? %>
+      <div class="space-y-8">
+        <% @track_events.each do |competition_event| %>
+          <div class="card bg-base-100 shadow-sm border border-gray-200">
+            <div class="card-body">
+              <h2 class="card-title text-xl">
+                <%= competition_event.event.name %>
+                <span class="badge badge-primary"><%= competition_event.event.gender %></span>
+              </h2>
+              
+              <% if competition_event.heats.any? %>
+                <div class="mt-4 space-y-4">
+                  <% competition_event.heats.includes(:grade).order('grades."order"', :heat_number).each do |heat| %>
+                    <div class="border border-gray-200 rounded-lg p-4">
+                      <div class="flex justify-between items-center mb-3">
+                        <h3 class="font-semibold text-lg">
+                          <%= heat.grade.name %> - 第 <%= heat.heat_number %> 组
+                        </h3>
+                        <div class="space-x-2">
+                          <%= link_to "查看详情", competition_heat_path(@competition, heat), class: "btn btn-sm" %>
+                          <%= link_to "编辑", edit_competition_heat_path(@competition, heat), class: "btn btn-sm btn-ghost" %>
+                          <%= button_to "删除", competition_heat_path(@competition, heat), 
+                                       method: :delete,
+                                       data: { turbo_confirm: "确定删除此分组吗？" },
+                                       class: "btn btn-sm btn-error btn-ghost" %>
+                        </div>
+                      </div>
+                      
+                      <div class="grid grid-cols-6 gap-2">
+                        <% (1..heat.total_lanes).each do |lane_num| %>
+                          <% lane = heat.lanes.find_by(lane_number: lane_num) %>
+                          <div class="border rounded p-2 text-center <%= lane ? 'bg-blue-50' : 'bg-gray-50' %>">
+                            <div class="text-xs text-gray-500 mb-1">第 <%= lane_num %> 道</div>
+                            <% if lane %>
+                              <% lane.lane_athletes.each do |lane_athlete| %>
+                                <div class="text-sm font-medium">
+                                  <%= lane_athlete.athlete.name %>
+                                  <% if lane_athlete.relay_position %>
+                                    <span class="text-xs text-gray-500">(棒<%= lane_athlete.relay_position %>)</span>
+                                  <% end %>
+                                </div>
+                                <div class="text-xs text-gray-500">
+                                  <%= lane_athlete.athlete.klass.name %>
+                                </div>
+                              <% end %>
+                            <% else %>
+                              <div class="text-xs text-gray-400">空</div>
+                            <% end %>
+                          </div>
+                        <% end %>
                       </div>
                     </div>
-                    
-                    <div class="grid grid-cols-6 gap-2">
-                      <% (1..heat.total_lanes).each do |lane_num| %>
-                        <% lane = heat.lanes.find_by(lane_number: lane_num) %>
-                        <div class="border rounded p-2 text-center <%= lane ? 'bg-blue-50' : 'bg-gray-50' %>">
-                          <div class="text-xs text-gray-500 mb-1">第 <%= lane_num %> 道</div>
-                          <% if lane %>
+                  <% end %>
+                </div>
+              <% else %>
+                <p class="text-gray-500 text-sm mt-2">暂无分组，请点击"自动生成径赛分组"</p>
+              <% end %>
+
+              <div class="mt-2 text-sm text-gray-600">
+                报名人数: <%= competition_event.athlete_competition_events.count %> 人
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="text-center py-8">
+        <p class="text-gray-500">暂无径赛项目</p>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- 田赛分组 -->
+  <div class="divider"></div>
+  
+  <div>
+    <div class="w-full flex justify-end mb-8">
+      <h1 class="font-bold text-3xl mr-auto">田赛分组</h1>
+      <%= button_to "自动生成田赛分组", generate_field_events_competition_heats_path(@competition), 
+                   method: :post,
+                   class: "btn btn-secondary",
+                   data: { turbo_confirm: "自动生成将清除所有现有田赛分组并重新分配（按年级分组），确定继续吗？" } %>
+    </div>
+
+    <% if @field_events.any? %>
+      <div class="space-y-8">
+        <% @field_events.each do |competition_event| %>
+          <div class="card bg-base-100 shadow-sm border border-gray-200">
+            <div class="card-body">
+              <h2 class="card-title text-xl">
+                <%= competition_event.event.name %>
+                <span class="badge badge-secondary"><%= competition_event.event.gender %></span>
+              </h2>
+              
+              <% if competition_event.heats.any? %>
+                <div class="mt-4 space-y-4">
+                  <% competition_event.heats.includes(:grade).order('grades."order"').each do |heat| %>
+                    <div class="border border-gray-200 rounded-lg p-4">
+                      <div class="flex justify-between items-center mb-3">
+                        <h3 class="font-semibold text-lg">
+                          <%= heat.grade.name %>（共 <%= heat.lanes.count %> 人）
+                        </h3>
+                        <div class="space-x-2">
+                          <%= link_to "查看详情", competition_heat_path(@competition, heat), class: "btn btn-sm" %>
+                          <%= button_to "删除", competition_heat_path(@competition, heat), 
+                                       method: :delete,
+                                       data: { turbo_confirm: "确定删除此分组吗？" },
+                                       class: "btn btn-sm btn-error btn-ghost" %>
+                        </div>
+                      </div>
+                      
+                      <div class="grid grid-cols-8 gap-2">
+                        <% heat.lanes.order(:position).each do |lane| %>
+                          <div class="border rounded p-2 text-center bg-green-50">
+                            <div class="text-xs text-gray-500 mb-1">第 <%= lane.position %> 位</div>
                             <% lane.lane_athletes.each do |lane_athlete| %>
                               <div class="text-sm font-medium">
                                 <%= lane_athlete.athlete.name %>
-                                <% if lane_athlete.relay_position %>
-                                  <span class="text-xs text-gray-500">(棒<%= lane_athlete.relay_position %>)</span>
-                                <% end %>
                               </div>
                               <div class="text-xs text-gray-500">
-                                <%= lane_athlete.athlete.klass.grade.name %> <%= lane_athlete.athlete.klass.name %>
+                                <%= lane_athlete.athlete.klass.name %>
                               </div>
                             <% end %>
-                          <% else %>
-                            <div class="text-xs text-gray-400">空</div>
-                          <% end %>
-                        </div>
-                      <% end %>
+                          </div>
+                        <% end %>
+                      </div>
                     </div>
-                  </div>
-                <% end %>
-              </div>
-            <% else %>
-              <p class="text-gray-500 text-sm mt-2">暂无分组，请点击"自动生成分组"</p>
-            <% end %>
+                  <% end %>
+                </div>
+              <% else %>
+                <p class="text-gray-500 text-sm mt-2">暂无分组，请点击"自动生成田赛分组"</p>
+              <% end %>
 
-            <div class="mt-2 text-sm text-gray-600">
-              报名人数: <%= competition_event.athlete_competition_events.count %> 人
+              <div class="mt-2 text-sm text-gray-600">
+                报名人数: <%= competition_event.athlete_competition_events.count %> 人
+              </div>
             </div>
           </div>
-        </div>
-      <% end %>
-    </div>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="text-center py-8">
+        <p class="text-gray-500">暂无田赛项目</p>
+      </div>
+    <% end %>
+  </div>
 
-    <div class="w-full flex justify-end mt-8">
-      <%= link_to "上一步", competition_athletes_path(@competition), class: "btn mr-2" %>
-      <%= link_to "下一步", competition_schedules_path(@competition), class: "btn btn-primary" %>
-    </div>
-  <% else %>
-    <div class="text-center py-12">
-      <p class="text-gray-500 text-lg mb-4">暂无径赛项目</p>
-      <p class="text-gray-400 text-sm">请先添加运动员并报名径赛项目</p>
-    </div>
-  <% end %>
+  <div class="w-full flex justify-end mt-8">
+    <%= link_to "上一步", competition_athletes_path(@competition), class: "btn mr-2" %>
+    <%= link_to "下一步", competition_schedules_path(@competition), class: "btn btn-primary" %>
+  </div>
 </div>
