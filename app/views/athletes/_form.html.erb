@@ -24,12 +24,12 @@
                       } } %>
   </div>
   <div class="my-5">
-    <%= form.label "年级" %>
-    <%= form.text_field :grade_name, class: ["input block mt-2", {"border-gray-400 focus:outline-blue-600": athlete.errors[:grade_name].none?, "border-red-400 focus:outline-red-600": athlete.errors[:grade_name].any?}] %>
-  </div>
-  <div class="my-5">
     <%= form.label "班级" %>
-    <%= form.text_field :class_name, class: ["input block mt-2", {"border-gray-400 focus:outline-blue-600": athlete.errors[:class_name].none?, "border-red-400 focus:outline-red-600": athlete.errors[:class_name].any?}] %>
+    <%= form.text_field :klass_name, 
+                       value: (athlete.persisted? ? athlete.klass.name : nil),
+                       class: ["input block mt-2", {"border-gray-400 focus:outline-blue-600": athlete.errors[:klass_name].none?, "border-red-400 focus:outline-red-600": athlete.errors[:klass_name].any?}], 
+                       placeholder: "例如: 1班" %>
+    <p class="text-sm text-gray-500 mt-1">如果班级不存在，系统会自动创建</p>
   </div>
   <div class="my-5">
     <%= form.label "报名项目" %>

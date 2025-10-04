@@ -1,14 +1,12 @@
 class Schedule < ApplicationRecord
-  belongs_to :competition_event
+  belongs_to :heat
 
   validates :scheduled_at, presence: true
-  validates :venue, presence: true
-  validates :status, presence: true
 
   # 状态：pending(待进行), in_progress(进行中), completed(已完成), cancelled(已取消)
   STATUS_TYPES = %w[pending in_progress completed cancelled].freeze
 
-  validates :status, inclusion: { in: STATUS_TYPES }
+  validates :status, inclusion: { in: STATUS_TYPES }, if: -> { status.present? }
 
   # 计算结束时间
   def calculate_end_at

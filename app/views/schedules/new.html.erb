@@ -1,0 +1,51 @@
+<%= render "shared/step_bar", step: "schedule" %>
+<div class="w-full max-w-2xl mx-auto bg-white p-6 rounded-md shadow-md">
+  <h1 class="font-bold text-2xl mb-6">添加日程</h1>
+  
+  <%= form_with(model: [@competition, @schedule], class: "contents") do |form| %>
+    <% if @schedule.errors.any? %>
+      <div id="error_explanation" class="bg-red-50 text-red-500 px-3 py-2 font-medium rounded-md mt-3">
+        <h2><%= pluralize(@schedule.errors.count, "error") %> prohibited this schedule from being saved:</h2>
+        <ul class="list-disc ml-6">
+          <% @schedule.errors.each do |error| %>
+            <li><%= error.full_message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <div class="my-5">
+      <%= form.label "比赛分组" %>
+      <%= form.collection_select :heat_id, @available_heats, :id, 
+                                 ->(heat) { "#{heat.competition_event.event.name} - 第#{heat.heat_number}组" },
+                                 { selected: params[:heat_id] },
+                                 { class: "select select-bordered w-full mt-2" } %>
+    </div>
+
+    <div class="my-5">
+      <%= form.label "开始时间" %>
+      <%= form.datetime_local_field :scheduled_at, class: "input block mt-2 w-full" %>
+    </div>
+
+    <div class="my-5">
+      <%= form.label "结束时间" %>
+      <%= form.datetime_local_field :end_at, class: "input block mt-2 w-full" %>
+      <p class="text-sm text-gray-500 mt-1">可选，不填写则不显示</p>
+    </div>
+
+    <div class="my-5">
+      <%= form.label "场地" %>
+      <%= form.text_field :venue, class: "input block mt-2 w-full", placeholder: "例如：田径场跑道" %>
+    </div>
+
+    <div class="my-5">
+      <%= form.label "备注" %>
+      <%= form.text_area :notes, rows: 3, class: "textarea textarea-bordered block mt-2 w-full", placeholder: "其他说明信息" %>
+    </div>
+
+    <div class="inline mt-6">
+      <%= form.submit "保存", class: "btn btn-primary mr-2" %>
+      <%= link_to "取消", competition_schedules_path(@competition), class: "btn" %>
+    </div>
+  <% end %>
+</div>

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_10_04_090513) do
+ActiveRecord::Schema[8.0].define(version: 2025_10_04_121812) do
   create_table "athlete_competition_events", force: :cascade do |t|
     t.integer "athlete_id", null: false
     t.integer "competition_event_id", null: false
@@ -26,9 +26,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_04_090513) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "klass_id"
-    t.string "student_number"
+    t.string "number"
     t.index ["klass_id"], name: "index_athletes_on_klass_id"
-    t.index ["student_number"], name: "index_athletes_on_student_number"
+    t.index ["number"], name: "index_athletes_on_number"
   end
 
   create_table "competition_event_staffs", force: :cascade do |t|
@@ -55,6 +55,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_04_090513) do
     t.date "start_date"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "track_lanes", default: 8, null: false
   end
 
   create_table "events", force: :cascade do |t|
@@ -78,10 +79,11 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_04_090513) do
 
   create_table "heats", force: :cascade do |t|
     t.integer "competition_event_id", null: false
-    t.integer "grade_id", null: false
+    t.integer "grade_id"
     t.integer "heat_number"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "total_lanes", default: 8, null: false
     t.index ["competition_event_id"], name: "index_heats_on_competition_event_id"
     t.index ["grade_id"], name: "index_heats_on_grade_id"
   end
@@ -130,7 +132,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_04_090513) do
   end
 
   create_table "schedules", force: :cascade do |t|
-    t.integer "competition_event_id", null: false
     t.datetime "scheduled_at"
     t.datetime "end_at"
     t.string "venue"
@@ -140,7 +141,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_04_090513) do
     t.integer "display_order"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["competition_event_id"], name: "index_schedules_on_competition_event_id"
+    t.integer "heat_id", null: false
+    t.index ["heat_id"], name: "index_schedules_on_heat_id"
     t.index ["scheduled_at"], name: "index_schedules_on_scheduled_at"
     t.index ["status"], name: "index_schedules_on_status"
   end
@@ -188,7 +190,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_04_090513) do
   add_foreign_key "lanes", "heats"
   add_foreign_key "results", "athletes"
   add_foreign_key "results", "lanes"
-  add_foreign_key "schedules", "competition_events"
+  add_foreign_key "schedules", "heats"
   add_foreign_key "sessions", "users"
   add_foreign_key "staffs", "competitions"
 end

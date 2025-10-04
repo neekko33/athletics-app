@@ -1,55 +1,74 @@
 <%= render "shared/step_bar", step: "athletes" %>
 <div class="w-full bg-white p-6 rounded-md shadow-md">
-  <div class="w-full flex justify-end mb-4">
-    <button class="btn btn-secondary mr-2" disabled>批量导入</button>
-    <%= link_to "手动添加", new_competition_athlete_path, class: "btn btn-primary" %>
+  <div class="w-full flex justify-end mb-8">
+    <h1 class="font-bold text-3xl mr-auto">运动员列表</h1>
+    <%= button_to "生成编号", generate_numbers_competition_athletes_path(@competition), 
+                 method: :post,
+                 class: "btn btn-primary mr-2",
+                 data: { confirm: "生成编号将按照年级→班级→性别顺序重新分配所有运动员编号，确定继续吗？" } %>
+    <%= link_to "批量导入", "#", class: "btn btn-secondary mr-2", onclick: "document.getElementById('import_modal').showModal(); return false;" %>
   </div>
   <div class="flex-1">
-    <% if @athletes.any? %>
-      <table class="table w-full max-w-3xl mx-auto">
-        <thead>
-        <tr>
-          <th></th>
-          <th>姓名</th>
-          <th>年级</th>
-          <th>班级</th>
-          <th>报名项目</th>
-          <th>操作</th>
-        </tr>
-        </thead>
-        <tbody>
-        <% @athletes.each_with_index do |athlete, index| %>
-          <tr>
-            <td><%= index + 1 %></td>
-            <td><%= athlete.name %></td>
-            <td><%= athlete.grade_name %></td>
-            <td><%= athlete.class_name %></td>
-            <td>
-              <% if athlete.events.any? %>
-                <div class="text-sm">
-                  <% athlete.events.each do |event| %>
-                    <span class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full mr-1 mb-1">
-                      <%= event.name %>
-                    </span>
-                  <% end %>
-                </div>
-              <% else %>
-                <span class="text-gray-500 text-sm">未报名项目</span>
-              <% end %>
-            </td>
-            <td>
-              <button class="btn btn-sm">编辑</button>
-              <button class="btn btn-sm btn-error">删除</button>
-            </td>
-          </tr>
-        <% end %>
-        </tbody>
-      </table>
-      <div class="w-full flex justify-end mt-4">
-        <%= link_to "下一步", class: "btn btn-primary mt-4" %>
+    <% if @grades.any? %>
+      <div class="w-full mt-4 space-x-4">
+        <div class="tabs tabs-lift">
+          <% @grades.each_with_index do |grade, index| %>
+            <input type="radio" name="my_tabs_3" class="tab" aria-label="<%= grade.name %>" <%= 'checked' if index == 0 %> />
+            <div class="tab-content bg-base-100 border-base-300 p-6">
+              <div class="flex items-center justify-end mb-2 max-w-3xl mx-auto">
+                <%= link_to "添加运动员", new_competition_athlete_path(competition_id: @competition.id, grade_id: grade.id), class: "btn btn-primary btn-sm" %>
+              </div>
+              <%= render "table", athletes: grade.athletes %>
+            </div>
+          <% end %>
+        </div>
+        <div class="w-full flex justify-end mt-4">
+          <%= link_to "上一步", competition_grades_path(@competition), class: "btn mr-2" %>
+          <%= link_to "下一步", competition_heats_path(@competition), class: "btn btn-primary" %>
+        </div>
       </div>
     <% else %>
-      <p>暂时还没有登记的运动员信息</p>
+      <p class="text-gray-500">请先添加年级信息后再进行运动员登记</p>
     <% end %>
   </div>
 </div>
+
+<!-- 批量导入模态框 -->
+<dialog id="import_modal" class="modal">
+  <div class="modal-box">
+    <h3 class="font-bold text-lg mb-4">批量导入运动员</h3>
+    <%= form_with url: import_competition_athletes_path(@competition), method: :post, multipart: true do |f| %>
+      <div class="mb-4">
+        <label class="label">
+          <span class="label-text">选择Excel文件</span>
+        </label>
+        <%= f.file_field :file, accept: ".xls,.xlsx", class: "file-input file-input-bordered w-full", required: true %>
+        <div class="label">
+          <span class="label-text-alt text-gray-500">支持 .xls 和 .xlsx 格式</span>
+        </div>
+      </div>
+      
+      <div class="alert alert-info mb-4">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        <div class="text-sm">
+          <p class="font-semibold mb-1">Excel格式要求：</p>
+          <ul class="list-disc ml-4 space-y-1">
+            <li>第一行为标题行：年级、班级、姓名、性别、报名项目</li>
+            <li>年级：如"一年级"</li>
+            <li>班级：如"1班"</li>
+            <li>性别：男 或 女</li>
+            <li>报名项目：多个项目用逗号分隔，如"男子100米,男子跳远"</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="modal-action">
+        <%= f.submit "开始导入", class: "btn btn-primary" %>
+        <button type="button" class="btn" onclick="document.getElementById('import_modal').close()">取消</button>
+      </div>
+    <% end %>
+  </div>
+  <form method="dialog" class="modal-backdrop">
+    <button>关闭</button>
+  </form>
+</dialog>

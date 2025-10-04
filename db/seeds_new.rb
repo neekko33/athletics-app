@@ -77,27 +77,28 @@ puts "✅ 创建了 #{competition.staff.count} 名工作人员"
 
 # 7. 确保事件已创建（从原 seeds.rb）
 unless Event.any?
-  track_events = [
-    { name: "100米", gender: "男", event_type: "track", avg_time: 5, max_participants: 6 },
-    { name: "100米", gender: "女", event_type: "track", avg_time: 5, max_participants: 6 },
-    { name: "200米", gender: "男", event_type: "track", avg_time: 6, max_participants: 6 },
-    { name: "200米", gender: "女", event_type: "track", avg_time: 6, max_participants: 6 },
-    { name: "400米", gender: "男", event_type: "track", avg_time: 8, max_participants: 6 },
-    { name: "400米", gender: "女", event_type: "track", avg_time: 8, max_participants: 6 },
-    { name: "800米", gender: "女", event_type: "track", avg_time: 10, max_participants: 6 },
-    { name: "1000米", gender: "男", event_type: "track", avg_time: 12, max_participants: 6 },
-    { name: "4×100米接力", gender: "男", event_type: "track", avg_time: 8, max_participants: 24 },
-    { name: "4×100米接力", gender: "女", event_type: "track", avg_time: 8, max_participants: 24 }
-  ]
+track_events = [
+  { name: "100米", gender: "男", event_type: "track", avg_time: 5, max_participants: 6 },
+  { name: "100米", gender: "女", event_type: "track", avg_time: 5, max_participants: 6 },
+  { name: "200米", gender: "男", event_type: "track", avg_time: 6, max_participants: 6 },
+  { name: "200米", gender: "女", event_type: "track", avg_time: 6, max_participants: 6 },
+  { name: "400米", gender: "男", event_type: "track", avg_time: 8, max_participants: 6 },
+  { name: "400米", gender: "女", event_type: "track", avg_time: 8, max_participants: 6 },
+  { name: "800米", gender: "女", event_type: "track", avg_time: 10, max_participants: 6 },
+  { name: "1000米", gender: "男", event_type: "track", avg_time: 12, max_participants: 6 },
+  { name: "4×100米接力", gender: "男", event_type: "track", avg_time: 8, max_participants: 24 },
+  { name: "4×100米接力", gender: "女", event_type: "track", avg_time: 8, max_participants: 24 }
+]
 
-  field_events = [
-    { name: "跳高", gender: "男", event_type: "field", avg_time: 20, max_participants: 99 },
-    { name: "跳高", gender: "女", event_type: "field", avg_time: 20, max_participants: 99 },
-    { name: "跳远", gender: "男", event_type: "field", avg_time: 15, max_participants: 99 },
-    { name: "跳远", gender: "女", event_type: "field", avg_time: 15, max_participants: 99 },
-    { name: "实心球", gender: "男", event_type: "field", avg_time: 15, max_participants: 99 },
-    { name: "实心球", gender: "女", event_type: "field", avg_time: 15, max_participants: 99 }
-  ]
+# 田赛项目 不限人数
+field_events = [
+  { name: "跳高", gender: "男", event_type: "field", avg_time: 20, max_participants: 99 },
+  { name: "跳高", gender: "女", event_type: "field", avg_time: 20, max_participants: 99 },
+  { name: "跳远", gender: "男", event_type: "field", avg_time: 15, max_participants: 99 },
+  { name: "跳远", gender: "女", event_type: "field", avg_time: 15, max_participants: 99 },
+  { name: "实心球", gender: "男", event_type: "field", avg_time: 15, max_participants: 99 },
+  { name: "实心球", gender: "女", event_type: "field", avg_time: 15, max_participants: 99 }
+]
 
   Event.create!(track_events + field_events)
   puts "✅ 创建了 #{Event.count} 个比赛项目"

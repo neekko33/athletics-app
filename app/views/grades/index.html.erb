@@ -1,0 +1,38 @@
+<%= render "shared/step_bar", step: "set_grades" %>
+<div class="w-full bg-white p-6 rounded-md shadow-md">
+  <div class="w-full flex justify-end mb-4">
+    <%= link_to "添加年级", new_competition_grade_path, class: "btn btn-primary" %>
+  </div>
+  <div class="flex-1">
+    <% if @grades.any? %>
+      <table class="table w-full max-w-3xl mx-auto">
+        <thead>
+          <tr>
+            <th></th>
+            <th>年级</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @grades.each_with_index do |grade, index| %>
+            <tr>
+              <td><%= index + 1 %></td>
+              <td><%= grade.name %></td>
+              <td>
+                <div class="flex space-x-2">
+                  <%= link_to "编辑", edit_competition_grade_path(@competition, grade), class: "btn btn-sm" %>
+                  <%= button_to "删除", competition_grade_path(@competition, grade), method: :delete, data: { turbo_confirm: "确定要删除该年级吗？" }, class: "btn btn-sm btn-error" %>
+                </div>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+      <div class="w-full flex justify-end mt-4">
+        <%= link_to "下一步", competition_athletes_path(@competition), class: "btn btn-success text-white mt-4" %>
+      </div>
+    <% else %>
+      <p>暂时还没有登记的参赛年级信息</p>
+    <% end %>
+  </div>
+</div>

@@ -8,6 +8,11 @@ class CompetitionsController < ApplicationController
 
   # GET /competitions/1 or /competitions/1.json
   def show
+    @competition = Competition.includes(
+      grades: { klasses: :athletes },
+      competition_events: :event,
+      schedules: { heat: { competition_event: :event } }
+    ).find(params[:id])
   end
 
   # GET /competitions/new
@@ -25,7 +30,7 @@ class CompetitionsController < ApplicationController
 
     respond_to do |format|
       if @competition.save
-        format.html { redirect_to @competition, notice: "Competition was successfully created." }
+        format.html { redirect_to @competition, notice: "运动会创建成功" }
       else
         format.html { render :new, status: :unprocessable_entity }
       end
@@ -36,7 +41,7 @@ class CompetitionsController < ApplicationController
   def update
     respond_to do |format|
       if @competition.update(competition_params)
-        format.html { redirect_to @competition, notice: "Competition was successfully updated.", status: :see_other }
+        format.html { redirect_to @competition, notice: "运动会更新成功", status: :see_other }
       else
         format.html { render :edit, status: :unprocessable_entity }
       end
@@ -48,7 +53,7 @@ class CompetitionsController < ApplicationController
     @competition.destroy!
 
     respond_to do |format|
-      format.html { redirect_to competitions_path, notice: "Competition was successfully destroyed.", status: :see_other }
+      format.html { redirect_to competitions_path, notice: "运动会删除成功", status: :see_other }
     end
   end
 
@@ -66,6 +71,6 @@ class CompetitionsController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def competition_params
-      params.expect(competition: [ :name, :start_date ])
+      params.expect(competition: [ :name, :start_date, :track_lanes ])
     end
 end

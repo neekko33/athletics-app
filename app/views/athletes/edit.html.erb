@@ -1,0 +1,8 @@
+<%= render "shared/step_bar", step: "athletes" %>
+<div class="w-full max-w-2xl mx-auto bg-white p-6 rounded-md shadow-md">
+  <h1 class="font-bold text-3xl mb-8">编辑运动员</h1>
+  <%= render "form", athlete: @athlete, grade: @grade, events: @events %>
+  <div class="mt-4">
+    <%= link_to "返回", competition_athletes_path(@competition), class: "btn" %>
+  </div>
+</div>

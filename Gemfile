@@ -20,6 +20,10 @@ gem "jbuilder"
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
 gem "bcrypt", "~> 3.1.7"
 
+# Read Excel files for bulk import
+gem "roo", "~> 2.10"
+gem "csv" # Required for Ruby 3.4+
+
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "tzinfo-data", platforms: %i[ windows jruby ]
 

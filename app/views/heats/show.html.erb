@@ -1,0 +1,43 @@
+<%= render "shared/step_bar", step: "heats" %>
+<div class="w-full max-w-4xl mx-auto bg-white p-6 rounded-md shadow-md">
+  <div class="mb-6">
+    <h1 class="font-bold text-2xl"><%= @competition_event.event.name %> - 第 <%= @heat.heat_number %> 组</h1>
+    <p class="text-gray-600 mt-2">共 <%= @heat.total_lanes %> 条赛道</p>
+  </div>
+
+  <div class="grid grid-cols-3 gap-4 mb-6">
+    <% (1..@heat.total_lanes).each do |lane_num| %>
+      <% lane = @heat.lanes.find_by(lane_number: lane_num) %>
+      <div class="card <%= lane ? 'bg-blue-50 border-blue-200' : 'bg-gray-50 border-gray-200' %> border">
+        <div class="card-body p-4">
+          <h3 class="card-title text-lg">第 <%= lane_num %> 道</h3>
+          <% if lane %>
+            <div class="space-y-2">
+              <% lane.lane_athletes.order(:relay_position).each do |lane_athlete| %>
+                <div class="bg-white rounded p-2">
+                  <p class="font-medium"><%= lane_athlete.athlete.name %></p>
+                  <p class="text-sm text-gray-600">
+                    <%= lane_athlete.athlete.klass.grade.name %> <%= lane_athlete.athlete.klass.name %>
+                  </p>
+                  <% if lane_athlete.relay_position %>
+                    <p class="text-xs text-gray-500">第 <%= lane_athlete.relay_position %> 棒</p>
+                  <% end %>
+                  <% if lane_athlete.athlete.number %>
+                    <p class="text-xs text-gray-500">编号: <%= lane_athlete.athlete.number %></p>
+                  <% end %>
+                </div>
+              <% end %>
+            </div>
+          <% else %>
+            <p class="text-gray-400 text-sm">此赛道为空</p>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="flex justify-between mt-8">
+    <%= link_to "返回", competition_heats_path(@competition), class: "btn" %>
+    <%= link_to "编辑", edit_competition_heat_path(@competition, @heat), class: "btn btn-primary" %>
+  </div>
+</div>

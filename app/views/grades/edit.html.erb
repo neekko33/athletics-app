@@ -1,0 +1,9 @@
+<% content_for :title, "编辑年级" %>
+
+<div class="md:w-2/3 w-full">
+  <h1 class="font-bold text-4xl">编辑年级</h1>
+
+  <%= render "form", grade: @grade %>
+
+  <%= link_to "返回列表", competition_grades_path(@competition), class: "btn" %>
+</div>

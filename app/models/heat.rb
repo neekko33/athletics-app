@@ -3,9 +3,10 @@ class Heat < ApplicationRecord
   belongs_to :grade, optional: true # 径赛不需要年级
   has_many :lanes, dependent: :destroy
   has_many :athletes, through: :lanes
-  has_one :schedule, through: :competition_event
+  has_one :schedule, dependent: :destroy
 
   validates :heat_number, presence: true, numericality: { only_integer: true, greater_than: 0 }
+  validates :total_lanes, presence: true, numericality: { only_integer: true, greater_than: 0, less_than_or_equal_to: 10 }
 
   # 田赛项目需要年级
   validates :grade_id, presence: true, if: :field_event?

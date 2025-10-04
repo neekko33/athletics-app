@@ -1,0 +1,37 @@
+<%= render "shared/step_bar", step: "heats" %>
+<div class="w-full max-w-2xl mx-auto bg-white p-6 rounded-md shadow-md">
+  <h1 class="font-bold text-2xl mb-6">编辑分组</h1>
+  
+  <%= form_with(model: [@competition, @heat], class: "contents") do |form| %>
+    <% if @heat.errors.any? %>
+      <div id="error_explanation" class="bg-red-50 text-red-500 px-3 py-2 font-medium rounded-md mt-3">
+        <h2><%= pluralize(@heat.errors.count, "error") %> prohibited this heat from being saved:</h2>
+        <ul class="list-disc ml-6">
+          <% @heat.errors.each do |error| %>
+            <li><%= error.full_message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <div class="my-5">
+      <%= form.label "组号" %>
+      <%= form.number_field :heat_number, class: "input block mt-2 w-full", min: 1 %>
+    </div>
+
+    <div class="my-5">
+      <%= form.label "赛道总数" %>
+      <%= form.number_field :total_lanes, class: "input block mt-2 w-full", min: 1, max: 10 %>
+    </div>
+
+    <div class="alert alert-warning mt-4">
+      <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+      <span class="text-sm">注意：修改赛道总数可能会影响已分配的运动员</span>
+    </div>
+
+    <div class="inline mt-6">
+      <%= form.submit "保存", class: "btn btn-primary mr-2" %>
+      <%= link_to "取消", competition_heat_path(@competition, @heat), class: "btn" %>
+    </div>
+  <% end %>
+</div>

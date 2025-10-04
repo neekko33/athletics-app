@@ -1,0 +1,106 @@
+<%= render "shared/step_bar", step: "schedule" %>
+<div class="w-full bg-white p-6 rounded-md shadow-md">
+  <div class="w-full flex justify-between items-center mb-8">
+    <h1 class="font-bold text-3xl">日程安排</h1>
+    <%= link_to "添加日程", new_competition_schedule_path(@competition), class: "btn btn-primary" %>
+  </div>
+
+  <% if @schedules.any? %>
+    <div class="mb-8" id="schedules-list">
+      <table class="table w-full">
+        <thead>
+          <tr>
+            <th>顺序</th>
+            <th>比赛项目</th>
+            <th>组次</th>
+            <th>开始时间</th>
+            <th>结束时间</th>
+            <th>场地</th>
+            <th>备注</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody data-controller="sortable">
+          <% @schedules.each_with_index do |schedule, index| %>
+            <tr data-schedule-id="<%= schedule.id %>" class="hover">
+              <td>
+                <div class="flex items-center">
+                  <svg class="w-4 h-4 mr-2 cursor-move" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"></path>
+                  </svg>
+                  <%= index + 1 %>
+                </div>
+              </td>
+              <td>
+                <div>
+                  <p class="font-medium"><%= schedule.heat.competition_event.event.name %></p>
+                  <p class="text-sm text-gray-500"><%= schedule.heat.competition_event.event.gender %></p>
+                </div>
+              </td>
+              <td>第 <%= schedule.heat.heat_number %> 组</td>
+              <td>
+                <% if schedule.scheduled_at %>
+                  <%= schedule.scheduled_at.strftime("%m月%d日 %H:%M") %>
+                <% else %>
+                  <span class="text-gray-400">未设置</span>
+                <% end %>
+              </td>
+              <td>
+                <% if schedule.end_at %>
+                  <%= schedule.end_at.strftime("%H:%M") %>
+                <% else %>
+                  <span class="text-gray-400">-</span>
+                <% end %>
+              </td>
+              <td><%= schedule.venue || "-" %></td>
+              <td class="max-w-xs truncate"><%= schedule.notes || "-" %></td>
+              <td>
+                <div class="flex space-x-2">
+                  <%= link_to "编辑", edit_competition_schedule_path(@competition, schedule), class: "btn btn-sm" %>
+                  <%= button_to "删除", competition_schedule_path(@competition, schedule),
+                               method: :delete,
+                               data: { confirm: "确定删除此日程吗？" },
+                               class: "btn btn-sm btn-error" %>
+                </div>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <div class="text-center py-12">
+      <p class="text-gray-500 text-lg mb-4">暂无日程安排</p>
+      <p class="text-gray-400 text-sm mb-6">请先生成径赛分组，然后为每个分组安排时间</p>
+      <%= link_to "添加日程", new_competition_schedule_path(@competition), class: "btn btn-primary" %>
+    </div>
+  <% end %>
+
+  <% if @heats_without_schedule.any? %>
+    <div class="mt-8 border-t pt-6">
+      <h2 class="font-bold text-xl mb-4">未安排的比赛分组</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <% @heats_without_schedule.each do |heat| %>
+          <div class="card bg-gray-50 border border-gray-200">
+            <div class="card-body p-4">
+              <h3 class="card-title text-base">
+                <%= heat.competition_event.event.name %> - 第 <%= heat.heat_number %> 组
+              </h3>
+              <p class="text-sm text-gray-600">
+                <%= heat.competition_event.event.gender %> | 
+                <%= heat.lanes.count %> 名运动员
+              </p>
+              <%= link_to "安排时间", new_competition_schedule_path(@competition, heat_id: heat.id), 
+                         class: "btn btn-sm btn-primary mt-2" %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
+  <div class="w-full flex justify-end mt-8">
+    <%= link_to "上一步", competition_heats_path(@competition), class: "btn mr-2" %>
+    <%= link_to "完成", competition_path(@competition), class: "btn btn-primary" %>
+  </div>
+</div>

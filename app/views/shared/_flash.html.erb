@@ -1,0 +1,41 @@
+<% if flash.any? %>
+  <div class="toast toast-top toast-end z-50" id="flash-messages">
+    <% flash.each do |type, message| %>
+      <div class="alert <%= flash_class(type) %> shadow-lg min-w-[300px] animate-slide-in">
+        <%= flash_icon(type) %>
+        <span><%= message %></span>
+        <button class="btn btn-sm btn-circle btn-ghost" onclick="this.parentElement.remove()">✕</button>
+      </div>
+    <% end %>
+  </div>
+
+  <script>
+    // 自动关闭 flash 消息
+    setTimeout(() => {
+      const flashMessages = document.getElementById('flash-messages');
+      if (flashMessages) {
+        flashMessages.querySelectorAll('.alert').forEach(alert => {
+          alert.style.transition = 'opacity 0.5s ease-out';
+          alert.style.opacity = '0';
+          setTimeout(() => alert.remove(), 500);
+        });
+      }
+    }, 5000); // 5秒后自动关闭
+  </script>
+
+  <style>
+    @keyframes slide-in {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+    .animate-slide-in {
+      animation: slide-in 0.3s ease-out;
+    }
+  </style>
+<% end %>

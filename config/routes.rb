@@ -1,11 +1,28 @@
 Rails.application.routes.draw do
+  get "grades/index"
   resource :session
   resources :passwords, param: :token
   get "up" => "rails/health#show", as: :rails_health_check
 
   root "competitions#index"
   resources :competitions do
-    resources :athletes, only: [ :index, :new, :create ]
+    resources :grades, except: [ :show ]  # Removed :show action
+    resources :athletes do
+      collection do
+        post :generate_numbers
+        post :import
+      end
+    end
+    resources :heats do
+      collection do
+        post :generate_all
+      end
+    end
+    resources :schedules do
+      collection do
+        post :reorder
+      end
+    end
   end
   resources :events
 end

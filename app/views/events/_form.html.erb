@@ -15,7 +15,11 @@
   </div>
   <div class="my-5">
     <%= form.label "项目类型" %>
-    <%= form.text_field :event_type, class: ["input block mt-2", {"border-gray-400 focus:outline-blue-600": event.errors[:event_type].none?, "border-red-400 focus:outline-red-600": event.errors[:event_type].any?}] %>
+    <%= form.select :event_type, options_for_select([["径赛", "track"], ["田赛", "field"]]), {}, { class: ["input block mt-2", {"border-gray-400 focus:outline-blue-600": event.errors[:event_type].none?, "border-red-400 focus:outline-red-600": event.errors[:event_type].any?}] } %>
+  </div>
+  <div class="my-5">
+    <%= form.label "性别" %>
+    <%= form.select :gender, options_for_select([["男", "男"], ["女", "女"]]), {}, { class: ["input block mt-2", {"border-gray-400 focus:outline-blue-600": event.errors[:gender].none?, "border-red-400 focus:outline-red-600": event.errors[:gender].any?}] } %>
   </div>
   <div class="my-5">
     <%= form.label "平均用时（分钟）" %>

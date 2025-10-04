@@ -1,21 +1,183 @@
 <% content_for :title, "Showing competition" %>
 <div class="w-full">
-  <% if notice.present? %>
-    <p class="py-2 px-3 bg-green-50 mb-5 text-green-500 font-medium rounded-md inline-block" id="notice"><%= notice %></p>
-  <% end %>
   <div class="flex justify-between items-center mb-8">
     <div class="flex space-x-5 items-center">
       <h1 class="font-bold text-4xl"><%= @competition.name %></h1>
       <p class="text-gray-600 mt-2">开始日期: <%= @competition.start_date.strftime("%Y-%m-%d") %></p>
+      <p class="text-gray-600 mt-2">径赛跑道: <%= @competition.track_lanes %> 条</p>
     </div>
     <div>
       <%= link_to "编辑", edit_competition_path(@competition), class: "btn mr-2" %>
       <%= link_to "返回", competitions_path, class: "btn" %>
     </div>
   </div>
-  <h2 class="font-bold text-2xl mb-6">设置流程</h2>
-  <div class="w-full text-center">
-    <p class="text-gray-600">没有设定好的运动会项目，请点击下方按钮开始配置</p>
-    <%= link_to "开始配置", competition_athletes_path(@competition), class: "btn btn-primary mt-4" %>
-  </div>
+
+  <% 
+    total_athletes = @competition.grades.includes(:athletes).sum { |g| g.athletes.count }
+    total_events = @competition.competition_events.count
+    total_heats = Heat.joins(competition_event: :competition)
+                     .where(competition_events: { competition_id: @competition.id }).count
+    scheduled_count = @competition.schedules.count
+  %>
+
+  <% if total_athletes > 0 %>
+    <!-- 统计卡片 -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+      <div class="stats shadow">
+        <div class="stat">
+          <div class="stat-title">参赛年级</div>
+          <div class="stat-value text-primary"><%= @competition.grades.count %></div>
+          <div class="stat-desc"><%= @competition.grades.sum { |g| g.klasses.count } %> 个班级</div>
+        </div>
+      </div>
+      
+      <div class="stats shadow">
+        <div class="stat">
+          <div class="stat-title">报名人数</div>
+          <div class="stat-value text-secondary"><%= total_athletes %></div>
+          <div class="stat-desc">运动员总数</div>
+        </div>
+      </div>
+      
+      <div class="stats shadow">
+        <div class="stat">
+          <div class="stat-title">比赛项目</div>
+          <div class="stat-value"><%= total_events %></div>
+          <div class="stat-desc"><%= total_heats %> 个分组</div>
+        </div>
+      </div>
+      
+      <div class="stats shadow">
+        <div class="stat">
+          <div class="stat-title">日程安排</div>
+          <div class="stat-value text-accent"><%= scheduled_count %></div>
+          <div class="stat-desc">已安排时间</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 功能入口 -->
+    <h2 class="font-bold text-2xl mb-4">管理功能</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+      <%= link_to competition_grades_path(@competition), class: "card bg-base-100 shadow-md hover:shadow-lg transition" do %>
+        <div class="card-body">
+          <h3 class="card-title">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+            </svg>
+            年级管理
+          </h3>
+          <p class="text-gray-600">管理参赛年级和班级信息</p>
+          <div class="card-actions justify-end">
+            <div class="badge badge-outline"><%= @competition.grades.count %> 个年级</div>
+          </div>
+        </div>
+      <% end %>
+
+      <%= link_to competition_athletes_path(@competition), class: "card bg-base-100 shadow-md hover:shadow-lg transition" do %>
+        <div class="card-body">
+          <h3 class="card-title">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+            </svg>
+            运动员管理
+          </h3>
+          <p class="text-gray-600">查看和管理运动员信息</p>
+          <div class="card-actions justify-end">
+            <div class="badge badge-outline"><%= total_athletes %> 名运动员</div>
+          </div>
+        </div>
+      <% end %>
+
+      <%= link_to competition_heats_path(@competition), class: "card bg-base-100 shadow-md hover:shadow-lg transition" do %>
+        <div class="card-body">
+          <h3 class="card-title">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+            </svg>
+            径赛分组
+          </h3>
+          <p class="text-gray-600">查看和调整径赛分组</p>
+          <div class="card-actions justify-end">
+            <div class="badge badge-outline"><%= total_heats %> 个分组</div>
+          </div>
+        </div>
+      <% end %>
+
+      <%= link_to competition_schedules_path(@competition), class: "card bg-base-100 shadow-md hover:shadow-lg transition" do %>
+        <div class="card-body">
+          <h3 class="card-title">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+            </svg>
+            日程安排
+          </h3>
+          <p class="text-gray-600">查看和编辑比赛日程</p>
+          <div class="card-actions justify-end">
+            <div class="badge badge-outline"><%= scheduled_count %> 项已安排</div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+    <!-- 日程总览 -->
+    <% if @competition.schedules.any? %>
+      <h2 class="font-bold text-2xl mb-4">比赛日程</h2>
+      <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <div class="overflow-x-auto">
+          <table class="table table-zebra w-full">
+            <thead>
+              <tr>
+                <th>序号</th>
+                <th>比赛项目</th>
+                <th>组次</th>
+                <th>时间</th>
+                <th>场地</th>
+                <th>参赛人数</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @competition.schedules.order(:scheduled_at).each_with_index do |schedule, index| %>
+                <tr>
+                  <td><%= index + 1 %></td>
+                  <td>
+                    <div class="font-medium"><%= schedule.heat.competition_event.event.name %></div>
+                    <div class="text-sm text-gray-500"><%= schedule.heat.competition_event.event.gender %></div>
+                  </td>
+                  <td>第 <%= schedule.heat.heat_number %> 组</td>
+                  <td>
+                    <% if schedule.scheduled_at %>
+                      <div><%= schedule.scheduled_at.strftime("%m月%d日") %></div>
+                      <div class="text-sm text-gray-500"><%= schedule.scheduled_at.strftime("%H:%M") %></div>
+                    <% else %>
+                      <span class="text-gray-400">未设置</span>
+                    <% end %>
+                  </td>
+                  <td><%= schedule.venue || "-" %></td>
+                  <td><%= schedule.heat.lanes.sum { |l| l.lane_athletes.count } %> 人</td>
+                  <td>
+                    <%= link_to "详情", competition_heat_path(@competition, schedule.heat), class: "btn btn-xs" %>
+                    <%= link_to "编辑", edit_competition_schedule_path(@competition, schedule), class: "btn btn-xs btn-ghost" %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    <% end %>
+
+  <% else %>
+    <!-- 空状态 - 引导用户开始配置 -->
+    <h2 class="font-bold text-2xl mb-6">设置流程</h2>
+    <div class="w-full text-center bg-gray-50 rounded-lg p-12">
+      <svg class="w-16 h-16 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+      </svg>
+      <p class="text-gray-600 text-lg mb-4">还没有设定运动会项目</p>
+      <p class="text-gray-500 mb-6">请点击下方按钮开始配置运动会信息</p>
+      <%= link_to "开始配置", competition_grades_path(@competition), class: "btn btn-primary btn-lg" %>
+    </div>
+  <% end %>
 </div>

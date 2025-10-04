@@ -1,8 +1,9 @@
 <div class="flex justify-center mb-8">
   <ul class="steps">
+    <li class="step <%= step == "set_grades" ? "step-primary" : "" %>">参赛年级</li>
     <li class="step <%= step == "athletes" ? "step-primary" : "" %>">运动员报名</li>
-    <li class="step <%= step == "number_assignment" ? "step-primary" : "" %>">号码分配</li>
-    <li class="step <%= step == "schedule_setting" ? "step-primary" : "" %>">日程设定</li>
-    <li class="step <%= step == "report_generation" ? "step-primary" : "" %>">生成报告</li>
+    <li class="step <%= step == "heats" ? "step-primary" : "" %>">径赛分组</li>
+    <li class="step <%= step == "schedule" ? "step-primary" : "" %>">日程安排</li>
+    <li class="step <%= step == "summary" ? "step-primary" : "" %>">总览</li>
   </ul>
 </div>
