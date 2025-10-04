@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_10_04_121812) do
+ActiveRecord::Schema[8.0].define(version: 2025_10_04_145837) do
   create_table "athlete_competition_events", force: :cascade do |t|
     t.integer "athlete_id", null: false
     t.integer "competition_event_id", null: false
@@ -56,6 +56,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_04_121812) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "track_lanes", default: 8, null: false
+    t.date "end_date"
+    t.string "daily_start_time", default: "08:30"
+    t.string "daily_end_time", default: "17:30"
   end
 
   create_table "events", force: :cascade do |t|
@@ -148,12 +151,12 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_04_121812) do
   end
 
   create_table "sessions", force: :cascade do |t|
-    t.integer "user_id", null: false
-    t.string "ip_address"
-    t.string "user_agent"
+    t.string "session_id", null: false
+    t.text "data"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["user_id"], name: "index_sessions_on_user_id"
+    t.index ["session_id"], name: "index_sessions_on_session_id", unique: true
+    t.index ["updated_at"], name: "index_sessions_on_updated_at"
   end
 
   create_table "staffs", force: :cascade do |t|
@@ -164,6 +167,15 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_04_121812) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["competition_id"], name: "index_staffs_on_competition_id"
+  end
+
+  create_table "user_sessions", force: :cascade do |t|
+    t.integer "user_id", null: false
+    t.string "ip_address"
+    t.string "user_agent"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_user_sessions_on_user_id"
   end
 
   create_table "users", force: :cascade do |t|
@@ -191,6 +203,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_04_121812) do
   add_foreign_key "results", "athletes"
   add_foreign_key "results", "lanes"
   add_foreign_key "schedules", "heats"
-  add_foreign_key "sessions", "users"
   add_foreign_key "staffs", "competitions"
+  add_foreign_key "user_sessions", "users"
 end

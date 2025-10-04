@@ -6,67 +6,65 @@
   </div>
 
   <% if @schedules.any? %>
-    <div class="mb-8" id="schedules-list">
-      <table class="table w-full">
-        <thead>
-          <tr>
-            <th>顺序</th>
-            <th>比赛项目</th>
-            <th>组次</th>
-            <th>开始时间</th>
-            <th>结束时间</th>
-            <th>场地</th>
-            <th>备注</th>
-            <th>操作</th>
-          </tr>
-        </thead>
-        <tbody data-controller="sortable">
-          <% @schedules.each_with_index do |schedule, index| %>
-            <tr data-schedule-id="<%= schedule.id %>" class="hover">
-              <td>
-                <div class="flex items-center">
-                  <svg class="w-4 h-4 mr-2 cursor-move" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"></path>
-                  </svg>
-                  <%= index + 1 %>
-                </div>
-              </td>
-              <td>
-                <div>
-                  <p class="font-medium"><%= schedule.heat.competition_event.event.name %></p>
-                  <p class="text-sm text-gray-500"><%= schedule.heat.competition_event.event.gender %></p>
-                </div>
-              </td>
-              <td>第 <%= schedule.heat.heat_number %> 组</td>
-              <td>
-                <% if schedule.scheduled_at %>
-                  <%= schedule.scheduled_at.strftime("%m月%d日 %H:%M") %>
-                <% else %>
-                  <span class="text-gray-400">未设置</span>
-                <% end %>
-              </td>
-              <td>
-                <% if schedule.end_at %>
-                  <%= schedule.end_at.strftime("%H:%M") %>
-                <% else %>
-                  <span class="text-gray-400">-</span>
-                <% end %>
-              </td>
-              <td><%= schedule.venue || "-" %></td>
-              <td class="max-w-xs truncate"><%= schedule.notes || "-" %></td>
-              <td>
-                <div class="flex space-x-2">
-                  <%= link_to "编辑", edit_competition_schedule_path(@competition, schedule), class: "btn btn-sm" %>
-                  <%= button_to "删除", competition_schedule_path(@competition, schedule),
-                               method: :delete,
-                               data: { turbo_confirm: "确定删除此日程吗？" },
-                               class: "btn btn-sm btn-error" %>
-                </div>
-              </td>
-            </tr>
-          <% end %>
-        </tbody>
-      </table>
+    <div class="mb-8">
+      <% @schedules_by_date.each do |date, schedules| %>
+        <div class="mb-8">
+          <h2 class="text-2xl font-bold mb-4 flex items-center">
+            <span class="badge badge-primary badge-lg mr-3"><%= date.strftime("%m月%d日") %></span>
+            <span class="text-gray-600 text-base font-normal">
+              <%= %w[日 一 二 三 四 五 六][date.wday] %>
+            </span>
+            <span class="ml-auto text-sm font-normal text-gray-500">
+              共 <%= schedules.count %> 场比赛
+            </span>
+          </h2>
+
+          <table class="table w-full">
+            <thead>
+              <tr>
+                <th>时间</th>
+                <th>比赛项目</th>
+                <th>组次</th>
+                <th>场地</th>
+                <th>备注</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% schedules.each do |schedule| %>
+                <tr class="hover">
+                  <td class="whitespace-nowrap">
+                    <div class="font-medium"><%= schedule.scheduled_at.strftime("%H:%M") %></div>
+                    <% if schedule.end_at %>
+                      <div class="text-sm text-gray-500">
+                        至 <%= schedule.end_at.strftime("%H:%M") %>
+                      </div>
+                    <% end %>
+                  </td>
+                  <td>
+                    <div>
+                      <p class="font-medium"><%= schedule.heat.competition_event.event.name %></p>
+                      <p class="text-sm text-gray-500"><%= schedule.heat.competition_event.event.gender %></p>
+                    </div>
+                  </td>
+                  <td>第 <%= schedule.heat.heat_number %> 组</td>
+                  <td><%= schedule.venue || "-" %></td>
+                  <td class="max-w-xs truncate"><%= schedule.notes || "-" %></td>
+                  <td>
+                    <div class="flex space-x-2">
+                      <%= link_to "编辑", edit_competition_schedule_path(@competition, schedule), class: "btn btn-sm" %>
+                      <%= button_to "删除", competition_schedule_path(@competition, schedule),
+                                   method: :delete,
+                                   data: { turbo_confirm: "确定删除此日程吗？" },
+                                   class: "btn btn-sm btn-error" %>
+                    </div>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% end %>
     </div>
   <% else %>
     <div class="text-center py-12">
@@ -84,7 +82,7 @@
           <div class="card bg-gray-50 border border-gray-200">
             <div class="card-body p-4">
               <h3 class="card-title text-base">
-                <%= heat.competition_event.event.name %> - 第 <%= heat.heat_number %> 组
+                <%= heat.grade.name %> - <%= heat.competition_event.event.name %> - 第 <%= heat.heat_number %> 组
               </h3>
               <p class="text-sm text-gray-600">
                 <%= heat.competition_event.event.gender %> | 

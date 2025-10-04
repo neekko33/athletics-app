@@ -6,6 +6,11 @@ class SchedulesController < ApplicationController
     @schedules = @competition.schedules
                             .includes(heat: { competition_event: :event })
                             .order(:scheduled_at)
+
+    # 按日期分组
+    @schedules_by_date = @schedules.group_by { |s| s.scheduled_at.to_date }
+                                   .sort_by { |date, _| date }
+
     @heats_without_schedule = Heat.joins(competition_event: :competition)
                                   .where(competition_events: { competition_id: @competition.id })
                                   .where.not(id: @competition.schedules.pluck(:heat_id))
@@ -38,7 +43,7 @@ class SchedulesController < ApplicationController
   def edit
     @available_heats = Heat.joins(competition_event: :competition)
                           .where(competition_events: { competition_id: @competition.id })
-                          .where("id = ? OR id NOT IN (?)", @schedule.heat_id, @competition.schedules.pluck(:heat_id))
+                          .where("heats.id = ? OR heats.id NOT IN (?)", @schedule.heat_id, @competition.schedules.pluck(:heat_id))
                           .includes(competition_event: :event)
   end
 
@@ -48,7 +53,7 @@ class SchedulesController < ApplicationController
     else
       @available_heats = Heat.joins(competition_event: :competition)
                             .where(competition_events: { competition_id: @competition.id })
-                            .where("id = ? OR id NOT IN (?)", @schedule.heat_id, @competition.schedules.pluck(:heat_id))
+                            .where("heats.id = ? OR heats.id NOT IN (?)", @schedule.heat_id, @competition.schedules.pluck(:heat_id))
                             .includes(competition_event: :event)
       render :edit, status: :unprocessable_entity
     end

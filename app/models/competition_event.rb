@@ -6,11 +6,9 @@ class CompetitionEvent < ApplicationRecord
   has_many :athletes, through: :athlete_competition_events
   has_many :heats, dependent: :destroy
   has_many :lanes, through: :heats
+  has_many :schedules, through: :heats
   has_many :competition_event_staff, dependent: :destroy
   has_many :staff, through: :competition_event_staff
-  has_one :schedule, dependent: :destroy
-
-  accepts_nested_attributes_for :schedule
 
   def field_event?
     event.event_type == "field"

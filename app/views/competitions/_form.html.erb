@@ -18,6 +18,20 @@
     <%= form.date_field :start_date, class: ["input block mt-1", {"border-gray-400 focus:outline-blue-600": competition.errors[:start_date].none?, "border-red-400 focus:outline-red-600": competition.errors[:start_date].any?}] %>
   </div>
   <div class="my-5">
+    <%= form.label "结束日期" %>
+    <%= form.date_field :end_date, class: ["input block mt-1", {"border-gray-400 focus:outline-blue-600": competition.errors[:end_date].none?, "border-red-400 focus:outline-red-600": competition.errors[:end_date].any?}] %>
+  </div>
+  <div class="my-5">
+    <%= form.label "每日开始时间" %>
+    <%= form.time_field :daily_start_time, class: ["input block mt-1", {"border-gray-400 focus:outline-blue-600": competition.errors[:daily_start_time].none?, "border-red-400 focus:outline-red-600": competition.errors[:daily_start_time].any?}], value: competition.daily_start_time || "08:30" %>
+    <p class="text-sm text-gray-500 mt-1">每天比赛开始时间（默认 08:30）</p>
+  </div>
+  <div class="my-5">
+    <%= form.label "每日结束时间" %>
+    <%= form.time_field :daily_end_time, class: ["input block mt-1", {"border-gray-400 focus:outline-blue-600": competition.errors[:daily_end_time].none?, "border-red-400 focus:outline-red-600": competition.errors[:daily_end_time].any?}], value: competition.daily_end_time || "17:30" %>
+    <p class="text-sm text-gray-500 mt-1">每天比赛结束时间（默认 17:30）</p>
+  </div>
+  <div class="my-5">
     <%= form.label "径赛跑道数量" %>
     <%= form.number_field :track_lanes, class: ["input block mt-1", {"border-gray-400 focus:outline-blue-600": competition.errors[:track_lanes].none?, "border-red-400 focus:outline-red-600": competition.errors[:track_lanes].any?}], min: 4, max: 10, placeholder: "通常为 6-8 条" %>
     <p class="text-sm text-gray-500 mt-1">设置田径场的跑道数量（4-10条）</p>
