@@ -23,6 +23,9 @@ Rails.application.routes.draw do
     resources :schedules do
       collection do
         post :reorder
+        get :bulk_new
+        post :bulk_create
+        get :print
       end
     end
   end

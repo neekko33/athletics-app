@@ -1,37 +1,311 @@
 <%= render "shared/step_bar", step: "heats" %>
-<div class="w-full max-w-2xl mx-auto bg-white p-6 rounded-md shadow-md">
-  <h1 class="font-bold text-2xl mb-6">编辑分组</h1>
-  
-  <%= form_with(model: [@competition, @heat], class: "contents") do |form| %>
-    <% if @heat.errors.any? %>
-      <div id="error_explanation" class="bg-red-50 text-red-500 px-3 py-2 font-medium rounded-md mt-3">
-        <h2><%= pluralize(@heat.errors.count, "error") %> prohibited this heat from being saved:</h2>
-        <ul class="list-disc ml-6">
-          <% @heat.errors.each do |error| %>
-            <li><%= error.full_message %></li>
+
+<div class="container mx-auto px-4 py-8">
+  <div class="mb-6">
+    <h1 class="text-3xl font-bold mb-2">编辑径赛分组</h1>
+    <div class="text-sm breadcrumbs">
+      <ul>
+        <li><%= link_to "返回分组列表", competition_heats_path(@competition) %></li>
+        <li class="text-gray-600">
+          <%= @competition_event.event.name %> - 
+          <%= @heat.grade&.name || "混合" %> - 
+          第<%= @heat.heat_number %>组
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- 左侧：当前分组运动员 -->
+    <div class="card bg-base-100 shadow-xl">
+      <div class="card-body">
+        <h2 class="card-title">当前分组运动员</h2>
+        <% is_relay = @competition_event.event.name.include?("接力") || @competition_event.event.name.include?("4x100") %>
+        
+        <div class="overflow-x-auto">
+          <table class="table table-zebra">
+            <thead>
+              <tr>
+                <th>赛道</th>
+                <% if is_relay %><th>棒次</th><% end %>
+                <th>姓名</th>
+                <th>班级</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @heat.lanes.includes(lane_athletes: { athlete: :klass }).each do |lane| %>
+                <% lane.lane_athletes.order(:relay_position).each do |lane_athlete| %>
+                  <tr>
+                    <td><%= lane.lane_number %></td>
+                    <% if is_relay %><td>第<%= lane_athlete.relay_position %>棒</td><% end %>
+                    <td><%= lane_athlete.athlete.name %></td>
+                    <td><%= lane_athlete.athlete.klass.name %></td>
+                    <td>
+                      <%= button_to "移除", 
+                          competition_heat_path(@competition, @heat), 
+                          method: :patch,
+                          params: { 
+                            action_type: "remove_athlete", 
+                            athlete_id: lane_athlete.athlete_id 
+                          },
+                          form: { data: { turbo_confirm: "确定要移除该运动员吗？" } },
+                          class: "btn btn-xs btn-error" %>
+                    </td>
+                  </tr>
+                <% end %>
+              <% end %>
+              
+              <% if @heat.lanes.empty? %>
+                <tr>
+                  <td colspan="<%= is_relay ? 5 : 4 %>" class="text-center text-gray-500">当前分组无运动员</td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="divider">赛道布局预览</div>
+        
+        <!-- 赛道可视化 -->
+        <div class="grid grid-cols-6 gap-2">
+          <% (1..@heat.total_lanes).each do |lane_num| %>
+            <% lane = @heat.lanes.find_by(lane_number: lane_num) %>
+            <div class="p-3 rounded border text-center <%= lane ? 'bg-primary text-primary-content' : 'bg-base-200' %>">
+              <div class="text-xs font-bold">赛道 <%= lane_num %></div>
+              <% if lane && lane.lane_athletes.any? %>
+                <div class="text-sm mt-1 truncate" title="<%= lane.lane_athletes.first.athlete.name %>">
+                  <%= lane.lane_athletes.first.athlete.name %>
+                </div>
+              <% else %>
+                <div class="text-xs text-gray-500 mt-1">空</div>
+              <% end %>
+            </div>
           <% end %>
-        </ul>
+        </div>
       </div>
-    <% end %>
-
-    <div class="my-5">
-      <%= form.label "组号" %>
-      <%= form.number_field :heat_number, class: "input block mt-2 w-full", min: 1 %>
     </div>
 
-    <div class="my-5">
-      <%= form.label "赛道总数" %>
-      <%= form.number_field :total_lanes, class: "input block mt-2 w-full", min: 1, max: 10 %>
-    </div>
+    <!-- 右侧：添加运动员 -->
+    <div class="card bg-base-100 shadow-xl">
+      <div class="card-body">
+        <h2 class="card-title">从其他分组添加运动员</h2>
+        <p class="text-sm text-gray-600 mb-2">
+          限制：同年级 (<%= @heat.grade&.name || "混合" %>)、同项目、同性别
+        </p>
+        
+        <% if @available_athletes.any? %>
+          <%= form_with url: competition_heat_path(@competition, @heat), method: :patch, local: true do |f| %>
+            <%= f.hidden_field :action_type, value: "add_athlete" %>
+            
+            <div class="form-control mb-4">
+              <label class="label">
+                <span class="label-text">选择运动员</span>
+              </label>
+              <select name="athlete_id" class="select select-bordered" required>
+                <option value="">-- 请选择 --</option>
+                
+                <% if @available_athletes.any? %>
+                  <optgroup label="📋 其他分组的运动员">
+                    <% @available_athletes.each do |athlete| %>
+                      <% 
+                        # 获取运动员当前的分组和赛道信息
+                        lane_athlete = athlete.lane_athletes.joins(:lane).where(lanes: { heat_id: Heat.where(competition_event_id: @competition_event.id).pluck(:id) }).first
+                        current_heat = lane_athlete&.lane&.heat
+                        lane_number = lane_athlete&.lane&.lane_number
+                        status_text = current_heat ? "第#{current_heat.heat_number}组 - #{lane_number}赛道" : ""
+                      %>
+                      <option value="<%= athlete.id %>">
+                        <%= athlete.name %> (<%= athlete.klass.name %>) - <%= status_text %>
+                      </option>
+                    <% end %>
+                  </optgroup>
+                <% end %>
+                
+                <% if @ungrouped_athletes.any? %>
+                  <optgroup label="⚠️ 已报名但未分组">
+                    <% @ungrouped_athletes.each do |athlete| %>
+                      <option value="<%= athlete.id %>">
+                        <%= athlete.name %> (<%= athlete.klass.name %>) - 未分组
+                      </option>
+                    <% end %>
+                  </optgroup>
+                <% end %>
+              </select>
+              <label class="label">
+                <span class="label-text-alt text-gray-500">
+                  显示同年级的其他分组运动员和未分组运动员
+                </span>
+              </label>
+            </div>
 
-    <div class="alert alert-warning mt-4">
-      <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
-      <span class="text-sm">注意：修改赛道总数可能会影响已分配的运动员</span>
-    </div>
+            <div class="form-control mb-4">
+              <label class="label">
+                <span class="label-text">分配到赛道</span>
+              </label>
+              <select name="lane_number" class="select select-bordered" required id="lane_select">
+                <option value="">-- 请选择 --</option>
+                <% (1..@heat.total_lanes).each do |lane_num| %>
+                  <% lane = @heat.lanes.find_by(lane_number: lane_num) %>
+                  <% if is_relay %>
+                    <%# 接力项目：显示赛道及其运动员数量 %>
+                    <option value="<%= lane_num %>">
+                      第 <%= lane_num %> 赛道 <%= lane ? "(#{lane.lane_athletes.count}/4人)" : "(空)" %>
+                    </option>
+                  <% else %>
+                    <%# 非接力项目：已占用的赛道禁用 %>
+                    <option value="<%= lane_num %>" <%= "disabled" if lane %>>
+                      第 <%= lane_num %> 赛道
+                      <%= lane ? "(已占用)" : "" %>
+                    </option>
+                  <% end %>
+                <% end %>
+              </select>
+            </div>
+            
+            <% if is_relay %>
+              <div class="form-control mb-4">
+                <label class="label">
+                  <span class="label-text">棒次</span>
+                </label>
+                <select name="relay_position" class="select select-bordered" required id="relay_position_select">
+                  <option value="">-- 请选择 --</option>
+                  <% (1..4).each do |position| %>
+                    <option value="<%= position %>">第 <%= position %> 棒</option>
+                  <% end %>
+                </select>
+                <label class="label">
+                  <span class="label-text-alt text-warning">
+                    ⚠️ 接力项目每个赛道需要4名运动员（4个棒次）
+                  </span>
+                </label>
+              </div>
+              
+              <!-- 显示所选赛道的棒次占用情况 -->
+              <div id="lane_status" class="alert alert-info text-sm mb-4" style="display: none;">
+                <div id="lane_status_content"></div>
+              </div>
+              
+              <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                  const laneSelect = document.getElementById('lane_select');
+                  const laneStatus = document.getElementById('lane_status');
+                  const laneStatusContent = document.getElementById('lane_status_content');
+                  
+                  // 赛道占用情况数据
+                  const laneData = {
+                    <% @heat.lanes.each do |lane| %>
+                      <%= lane.lane_number %>: [
+                        <% lane.lane_athletes.order(:relay_position).each do |la| %>
+                          { position: <%= la.relay_position %>, name: '<%= la.athlete.name %>' },
+                        <% end %>
+                      ],
+                    <% end %>
+                  };
+                  
+                  laneSelect.addEventListener('change', function() {
+                    const laneNum = parseInt(this.value);
+                    if (laneNum && laneData[laneNum]) {
+                      const athletes = laneData[laneNum];
+                      let html = '<strong>第' + laneNum + '赛道当前状态：</strong><br>';
+                      for (let i = 1; i <= 4; i++) {
+                        const athlete = athletes.find(a => a.position === i);
+                        if (athlete) {
+                          html += '第' + i + '棒: ' + athlete.name + ' ✓<br>';
+                        } else {
+                          html += '第' + i + '棒: 空缺 ⚠️<br>';
+                        }
+                      }
+                      laneStatusContent.innerHTML = html;
+                      laneStatus.style.display = 'block';
+                    } else {
+                      laneStatus.style.display = 'none';
+                    }
+                  });
+                });
+              </script>
+            <% end %>
 
-    <div class="inline mt-6">
-      <%= form.submit "保存", class: "btn btn-primary mr-2" %>
-      <%= link_to "取消", competition_heat_path(@competition, @heat), class: "btn" %>
+            <div class="card-actions justify-end">
+              <%= f.submit "添加运动员", class: "btn btn-primary" %>
+            </div>
+          <% end %>
+
+          <div class="divider">运动员状态列表</div>
+
+          <!-- 可用运动员表格 -->
+          <div class="overflow-x-auto max-h-96">
+            <% if @available_athletes.any? || @ungrouped_athletes.any? %>
+              <table class="table table-sm">
+                <thead>
+                  <tr>
+                    <th>姓名</th>
+                    <th>班级</th>
+                    <th>当前状态</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% if @available_athletes.any? %>
+                    <tr class="bg-base-200">
+                      <td colspan="3" class="font-bold text-xs">其他分组的运动员</td>
+                    </tr>
+                    <% @available_athletes.each do |athlete| %>
+                      <% 
+                        lane_athlete = athlete.lane_athletes.joins(:lane).where(lanes: { heat_id: Heat.where(competition_event_id: @competition_event.id).pluck(:id) }).first
+                        current_heat = lane_athlete&.lane&.heat
+                        lane_number = lane_athlete&.lane&.lane_number
+                      %>
+                      <tr>
+                        <td><%= athlete.name %></td>
+                        <td><%= athlete.klass.name %></td>
+                        <td class="text-xs text-gray-600">
+                          <% if current_heat && lane_number %>
+                            <span class="badge badge-sm badge-info">第<%= current_heat.heat_number %>组 - <%= lane_number %>赛道</span>
+                          <% else %>
+                            <span class="badge badge-sm">-</span>
+                          <% end %>
+                        </td>
+                      </tr>
+                    <% end %>
+                  <% end %>
+                  
+                  <% if @ungrouped_athletes.any? %>
+                    <tr class="bg-warning bg-opacity-20">
+                      <td colspan="3" class="font-bold text-xs">
+                        ⚠️ 已报名但未分组的运动员
+                      </td>
+                    </tr>
+                    <% @ungrouped_athletes.each do |athlete| %>
+                      <tr class="bg-warning bg-opacity-10">
+                        <td><%= athlete.name %></td>
+                        <td><%= athlete.klass.name %></td>
+                        <td class="text-xs">
+                          <span class="badge badge-sm badge-warning">未分组</span>
+                        </td>
+                      </tr>
+                    <% end %>
+                  <% end %>
+                </tbody>
+              </table>
+            <% else %>
+              <div class="alert alert-info">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <span>没有可添加的运动员</span>
+              </div>
+            <% end %>
+          </div>
+        <% else %>
+          <div class="alert alert-info">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <span>没有可添加的运动员</span>
+          </div>
+        <% end %>
+      </div>
     </div>
-  <% end %>
+  </div>
+
+  <div class="mt-6 flex gap-4">
+    <%= link_to "返回分组列表", competition_heats_path(@competition), class: "btn btn-outline" %>
+    <%= link_to "查看详情", competition_heat_path(@competition, @heat), class: "btn btn-ghost" %>
+  </div>
 </div>

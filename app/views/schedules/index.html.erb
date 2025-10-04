@@ -2,7 +2,13 @@
 <div class="w-full bg-white p-6 rounded-md shadow-md">
   <div class="w-full flex justify-between items-center mb-8">
     <h1 class="font-bold text-3xl">日程安排</h1>
-    <%= link_to "添加日程", new_competition_schedule_path(@competition), class: "btn btn-primary" %>
+    <div class="flex space-x-2">
+      <% if @schedules.any? %>
+        <a href="#formatted-schedule" class="btn btn-outline">查看格式化日程</a>
+      <% end %>
+      <%= link_to "批量添加", bulk_new_competition_schedules_path(@competition), class: "btn btn-secondary" %>
+      <%= link_to "单个添加", new_competition_schedule_path(@competition), class: "btn btn-primary" %>
+    </div>
   </div>
 
   <% if @schedules.any? %>
@@ -12,7 +18,7 @@
           <h2 class="text-2xl font-bold mb-4 flex items-center">
             <span class="badge badge-primary badge-lg mr-3"><%= date.strftime("%m月%d日") %></span>
             <span class="text-gray-600 text-base font-normal">
-              <%= %w[日 一 二 三 四 五 六][date.wday] %>
+              星期<%= %w[日 一 二 三 四 五 六][date.wday] %>
             </span>
             <span class="ml-auto text-sm font-normal text-gray-500">
               共 <%= schedules.count %> 场比赛
@@ -47,7 +53,7 @@
                       <p class="text-sm text-gray-500"><%= schedule.heat.competition_event.event.gender %></p>
                     </div>
                   </td>
-                  <td>第 <%= schedule.heat.heat_number %> 组</td>
+                  <td><%= schedule.heat.grade.name %> 第 <%= schedule.heat.heat_number %> 组</td>
                   <td><%= schedule.venue || "-" %></td>
                   <td class="max-w-xs truncate"><%= schedule.notes || "-" %></td>
                   <td>
@@ -95,6 +101,79 @@
         <% end %>
       </div>
     </div>
+  <% end %>
+
+  <% if @schedules.any? %>
+    <div id="formatted-schedule" class="mt-12 border-t pt-8">
+      <h2 class="font-bold text-2xl mb-6">格式化日程</h2>
+      
+      <div class="bg-gray-50 p-6 rounded-lg border border-gray-200">
+        <div class="mb-4 text-sm text-gray-600">
+          提示：点击下方文本区域全选，然后复制到 Word 中进行编辑
+        </div>
+        <textarea readonly 
+                  class="w-full p-4 font-mono text-sm border border-gray-300 rounded"
+                  rows="30"
+                  onclick="this.select()"
+                  style="resize: vertical;"><% @schedules_by_date.each do |date, schedules| %>竞 赛 日 程
+<%= date.strftime("%-m月%-d日") %>上午08:30——12：00
+<% track_schedules = schedules.select { |s| s.heat.competition_event.event.event_type == "track" }.sort_by(&:scheduled_at) %><% field_schedules = schedules.select { |s| s.heat.competition_event.event.event_type == "field" }.sort_by(&:scheduled_at) %><% if track_schedules.any? %>
+径        赛
+<% track_schedules.each_with_index do |schedule, index| %><% event = schedule.heat.competition_event.event %><% heat = schedule.heat %><% participant_count = heat.lanes.count %><% take_count = (participant_count * 0.6).ceil %><% if heat.grade %><% gender_text = event.gender == "男" ? "男子组" : (event.gender == "女" ? "女子组" : "#{event.gender}组") %><% event_name = "#{heat.grade.name}#{gender_text}#{event.name}" %><% else %><% event_name = "#{event.name}(#{event.gender})" %><% end %><%= index + 1 %>、<%= event_name %>预决赛     <%= participant_count %>人<%= heat.heat_number %>组  取 <%= take_count %>名   <%= schedule.scheduled_at.strftime("%-H:%M") %>
+<% end %><% end %><% if field_schedules.any? %>
+田         赛
+<% field_schedules.each_with_index do |schedule, index| %><% event = schedule.heat.competition_event.event %><% heat = schedule.heat %><% participant_count = heat.lanes.count %><% take_count = (participant_count * 0.6).ceil %><% gender_text = event.gender == "男" ? "男子组" : (event.gender == "女" ? "女子组" : "#{event.gender}组") %><% event_name = "#{heat.grade.name}#{gender_text}#{event.name}" %><%= index + 1 %>、<%= event_name %>预决赛       <%= participant_count %>人      取<%= take_count %>名   <%= schedule.scheduled_at.strftime("%-H:%M") %>
+<% end %><% end %>
+<% end %>
+
+各 班 级 名 单
+
+<% @grades.each do |grade| %><%= grade.name %>组
+<% grade.klasses.order(:name).each do |klass| %><% athletes = klass.athletes.order(:number) %><% if athletes.any? %>
+<%= class_name_to_chinese(klass.name) %>
+运动员：
+<%= athletes.map { |a| "#{a.number} #{a.name}" }.join(" ") %>
+<% end %><% end %>
+<% end %>
+
+竞 赛 分 组
+
+<% heats_by_grade_gender = @schedules.map(&:heat).uniq.group_by do |heat| event = heat.competition_event.event; [heat.grade&.name || "其他", event.gender, event.event_type] end.sort_by { |key, _| [key[0], key[1] == "男" ? 0 : 1, key[2] == "track" ? 0 : 1] } %><% heats_by_grade_gender.each do |(grade_name, gender, event_type), grade_heats| %><%= grade_name %> <%= gender == "男" ? "男子组" : "女子组" %> <%= event_type == "track" ? "径赛" : "田赛" %>
+<% heats_by_event = grade_heats.group_by { |h| h.competition_event.event } %><% heats_by_event.each_with_index do |(event, event_heats), event_index| %><% event_heats_sorted = event_heats.sort_by(&:heat_number) %><% total_participants = event_heats_sorted.sum { |h| h.lanes.count } %><% total_groups = event_heats_sorted.count %><% take_count = (total_participants * 0.6).ceil %>
+<%= event_index + 1 %>、<%= event.name %>预决赛，<%= total_participants %>人<%= total_groups %>组，取<%= take_count %>名
+<% event_heats_sorted.each do |heat| %>
+第<%= number_to_chinese(heat.heat_number) %>组
+道次<% heat.lanes.order(:lane_number).each do |lane| %>	<%= %w[一 二 三 四 五 六 七 八][lane.lane_number - 1] %><% end %>
+姓名<% heat.lanes.order(:lane_number).each do |lane| %><% lane_athlete = lane.lane_athletes.first %><% athlete = lane_athlete&.athlete %>	<%= athlete&.name || "" %><% end %>
+号码<% heat.lanes.order(:lane_number).each do |lane| %><% lane_athlete = lane.lane_athletes.first %><% athlete = lane_athlete&.athlete %>	<%= athlete&.number || "" %><% end %>
+班级<% heat.lanes.order(:lane_number).each do |lane| %><% lane_athlete = lane.lane_athletes.first %><% athlete = lane_athlete&.athlete %>	<%= class_name_to_chinese(athlete&.klass&.name) || "" %><% end %>
+<% end %><% end %><% end %></textarea>
+        <div class="mt-4">
+          <button onclick="copyToClipboard()" class="btn btn-primary btn-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+            </svg>
+            复制到剪贴板
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <script>
+      function copyToClipboard() {
+        const textarea = document.querySelector('#formatted-schedule textarea');
+        textarea.select();
+        document.execCommand('copy');
+        
+        const btn = event.target.closest('button');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>已复制！';
+        
+        setTimeout(() => {
+          btn.innerHTML = originalText;
+        }, 2000);
+      }
+    </script>
   <% end %>
 
   <div class="w-full flex justify-end mt-8">

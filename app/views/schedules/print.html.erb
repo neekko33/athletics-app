@@ -1,0 +1,174 @@
+<h1>竞 赛 日 程</h1>
+
+<% @schedules_by_date.each do |date, schedules| %>
+  <div class="date-section">
+    <div class="date-header">
+      <%= date.strftime("%-m月%-d日") %>上午08:30——12：00
+    </div>
+    
+    <% 
+      # 按项目类型分组：径赛和田赛
+      track_schedules = schedules.select { |s| s.heat.competition_event.event.event_type == "track" }.sort_by(&:scheduled_at)
+      field_schedules = schedules.select { |s| s.heat.competition_event.event.event_type == "field" }.sort_by(&:scheduled_at)
+    %>
+    
+    <% if track_schedules.any? %>
+      <div class="event-type-section">
+        <div class="event-type-title">径        赛</div>
+        <% track_schedules.each_with_index do |schedule, index| %>
+          <% 
+            event = schedule.heat.competition_event.event
+            heat = schedule.heat
+            participant_count = heat.lanes.count
+            take_count = (participant_count * 0.6).ceil
+            # 构建项目名称 - 完全按照示例格式
+            if heat.grade
+              # 带年级的: "七年级男子组100米"
+              gender_text = event.gender == "男" ? "男子组" : (event.gender == "女" ? "女子组" : "#{event.gender}组")
+              event_name = "#{heat.grade.name}#{gender_text}#{event.name}"
+            else
+              # 不带年级的(如教职工): "教职工50以上男子50米"
+              event_name = "#{event.name}(#{event.gender})"
+            end
+          %>
+          <div class="schedule-item">
+            <%= index + 1 %>、<%= event_name %>预决赛     <%= participant_count %>人<%= heat.heat_number %>组  取 <%= take_count %>名   <%= schedule.scheduled_at.strftime("%-H:%M") %>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+    
+    <% if field_schedules.any? %>
+      <div class="event-type-section">
+        <div class="event-type-title">田         赛</div>
+        <% field_schedules.each_with_index do |schedule, index| %>
+          <% 
+            event = schedule.heat.competition_event.event
+            heat = schedule.heat
+            participant_count = heat.lanes.count
+            take_count = (participant_count * 0.6).ceil
+            # 田赛格式: "七年级男子组跳远"
+            gender_text = event.gender == "男" ? "男子组" : (event.gender == "女" ? "女子组" : "#{event.gender}组")
+            event_name = "#{heat.grade.name}#{gender_text}#{event.name}"
+          %>
+          <div class="schedule-item">
+            <%= index + 1 %>、<%= event_name %>预决赛       <%= participant_count %>人      取<%= take_count %>名   <%= schedule.scheduled_at.strftime("%-H:%M") %>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+<% end %>
+
+<!-- 班级名单部分 -->
+<div class="page-break"></div>
+<h1>各 班 级 名 单</h1>
+
+<% @grades.each do |grade| %>
+  <div class="grade-section">
+    <h2><%= grade.name %>组</h2>
+    
+    <% grade.klasses.order(:name).each do |klass| %>
+      <% athletes = klass.athletes.order(:number) %>
+      <% if athletes.any? %>
+        <div class="class-section">
+          <h3><%= klass.name %></h3>
+          <div class="class-label">运动员：</div>
+          <div class="athletes-list">
+            <% athletes.each do |athlete| %>
+              <span class="athlete-item"><%= athlete.number %> <%= athlete.name %></span>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    <% end %>
+  </div>
+<% end %>
+
+<!-- 竞赛分组部分 -->
+<div class="page-break"></div>
+<h1>竞 赛 分 组</h1>
+
+<% 
+  # 按年级和性别组织所有heats
+  heats_by_grade_gender = @schedules.map(&:heat).uniq.group_by do |heat|
+    event = heat.competition_event.event
+    [heat.grade&.name || "其他", event.gender, event.event_type]
+  end.sort_by { |key, _| [key[0], key[1]] }
+%>
+
+<% heats_by_grade_gender.each do |(grade_name, gender, event_type), grade_heats| %>
+  <div class="competition-group-section">
+    <h2><%= grade_name %> <%= gender == "男" ? "男子组" : "女子组" %> <%= event_type == "track" ? "径赛" : "田赛" %></h2>
+    
+    <% 
+      # 按项目分组heats
+      heats_by_event = grade_heats.group_by { |h| h.competition_event.event }
+    %>
+    
+    <% heats_by_event.each_with_index do |(event, event_heats), event_index| %>
+      <% 
+        event_heats_sorted = event_heats.sort_by(&:heat_number)
+        total_participants = event_heats_sorted.sum { |h| h.lanes.count }
+        total_groups = event_heats_sorted.count
+        take_count = (total_participants * 0.6).ceil
+      %>
+      
+      <div class="event-detail">
+        <div class="event-detail-title">
+          <%= event_index + 1 %>、<%= event.name %>预决赛，<%= total_participants %>人<%= total_groups %>组，取<%= take_count %>名
+        </div>
+        
+        <% event_heats_sorted.each do |heat| %>
+          <div class="heat-detail">
+            <div class="heat-title">第<%= heat.heat_number %>组</div>
+            
+            <table class="heat-table">
+              <thead>
+                <tr>
+                  <th>道次</th>
+                  <% heat.lanes.order(:lane_number).each do |lane| %>
+                    <th><%= %w[一 二 三 四 五 六 七 八][lane.lane_number - 1] %></th>
+                  <% end %>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="label-cell">姓名</td>
+                  <% heat.lanes.order(:lane_number).each do |lane| %>
+                    <% 
+                      # 获取该赛道的运动员
+                      lane_athlete = lane.lane_athletes.first
+                      athlete = lane_athlete&.athlete
+                    %>
+                    <td><%= athlete&.name || "" %></td>
+                  <% end %>
+                </tr>
+                <tr>
+                  <td class="label-cell">号码</td>
+                  <% heat.lanes.order(:lane_number).each do |lane| %>
+                    <% 
+                      lane_athlete = lane.lane_athletes.first
+                      athlete = lane_athlete&.athlete
+                    %>
+                    <td><%= athlete&.number || "" %></td>
+                  <% end %>
+                </tr>
+                <tr>
+                  <td class="label-cell">班级</td>
+                  <% heat.lanes.order(:lane_number).each do |lane| %>
+                    <% 
+                      lane_athlete = lane.lane_athletes.first
+                      athlete = lane_athlete&.athlete
+                    %>
+                    <td><%= athlete&.klass&.name || "" %></td>
+                  <% end %>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+<% end %>
